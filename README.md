@@ -5,7 +5,7 @@
 > **Projeto Integrador - 4º Semestre**  
 > *Análise e Desenvolvimento de Sistemas*
 
-----
+---
 
 ## 📌 Sobre o Projeto
 
