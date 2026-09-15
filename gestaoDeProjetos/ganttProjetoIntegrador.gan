@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?><project name="Untitled Gantt Project" company="" webLink="http://" view-date="2026-07-19" view-index="0" gantt-divider-location="351" resource-divider-location="300" version="3.2.3247" locale="pt_BR">
+    <description/>
+    <view zooming-state="default:7" id="gantt-chart">
+        <field id="tpd3" name="Nome" width="200" order="0"/>
+        <field id="tpd4" name="Data inicial" width="75" order="1"/>
+        <field id="tpd5" name="Data final" width="75" order="2"/>
+        <option id="filter.completedTasks" value="false"/>
+        <option id="color.recent">
+            <![CDATA[#000000 #ff0066 #00ff66 #ff0000 #cc00cc #6666ff #f4f4f4]]>
+        </option>
+    </view>
+    <view id="resource-table">
+        <field id="0" name="Nome" width="210" order="0"/>
+        <field id="1" name="Função" width="86" order="1"/>
+    </view>
+    <!-- -->
+    <calendars>
+        <day-types>
+            <day-type id="0"/>
+            <day-type id="1"/>
+            <default-week id="1" name="default" sun="1" mon="0" tue="0" wed="0" thu="0" fri="0" sat="1"/>
+            <only-show-weekends value="false"/>
+            <overriden-day-types/>
+            <days/>
+        </day-types>
+    </calendars>
+    <tasks empty-milestones="true">
+        <taskproperties>
+            <taskproperty id="tpd0" name="type" type="default" valuetype="icon"/>
+            <taskproperty id="tpd1" name="priority" type="default" valuetype="icon"/>
+            <taskproperty id="tpd2" name="info" type="default" valuetype="icon"/>
+            <taskproperty id="tpd3" name="name" type="default" valuetype="text"/>
+            <taskproperty id="tpd4" name="begindate" type="default" valuetype="date"/>
+            <taskproperty id="tpd5" name="enddate" type="default" valuetype="date"/>
+            <taskproperty id="tpd6" name="duration" type="default" valuetype="int"/>
+            <taskproperty id="tpd7" name="completion" type="default" valuetype="int"/>
+            <taskproperty id="tpd8" name="coordinator" type="default" valuetype="text"/>
+            <taskproperty id="tpd9" name="predecessorsr" type="default" valuetype="text"/>
+        </taskproperties>
+        <task id="1" name="Banco de Dados" color="#6666ff" meeting="false" start="2026-08-17" duration="14" complete="0" thirdDate="2026-08-17" thirdDate-constraint="0" expand="true">
+            <depend id="11" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="2" name="Identificar as Necessidades" color="#6666ff" meeting="false" start="2026-08-17" duration="1" complete="0" thirdDate="2026-08-17" thirdDate-constraint="0" expand="true">
+            <depend id="3" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="3" name="Esqueleto Conceitual" color="#6666ff" meeting="false" start="2026-08-18" duration="1" complete="0" thirdDate="2026-08-17" thirdDate-constraint="0" expand="true">
+            <depend id="4" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="4" name="Fazer o MER / DER" color="#6666ff" meeting="false" start="2026-08-19" duration="2" complete="0" thirdDate="2026-08-17" thirdDate-constraint="0" expand="true">
+            <notes>
+                <![CDATA[definir atributos, tipo de dados, relacionamentos e chaves primarias ]]>
+            </notes>
+            <depend id="5" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="5" name="Escolha do Modelo de Banco de Dados" color="#6666ff" meeting="false" start="2026-08-21" duration="1" complete="0" thirdDate="2026-08-17" thirdDate-constraint="0" expand="true">
+            <notes>
+                <![CDATA[Essa etapa vai ser responsável por escolher qual banco de dados iremos utilizar para montar o nosso projeto.]]>
+            </notes>
+            <depend id="6" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="6" name="Teste Prático" color="#6666ff" meeting="false" start="2026-08-24" duration="3" complete="0" thirdDate="2026-08-26" thirdDate-constraint="0" expand="true">
+            <notes>
+                <![CDATA[Criação de banco no ambiente de teste decisões sobre particionamento, clusterização, formatos de arquivo e estratégias de distribuição entram em jogo.
+]]>
+            </notes>
+            <depend id="8" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="8" name="Normalização" color="#6666ff" meeting="false" start="2026-08-27" duration="2" complete="0" thirdDate="2026-08-17" thirdDate-constraint="0" expand="true">
+            <notes>
+                <![CDATA[A normalização é o processo de estruturar tabelas relacionais para eliminar dados redundantes e prevenir as três anomalias clássicas que levam a inconsistências ao longo do tempo: inserção, atualização e exclusão.]]>
+            </notes>
+            <depend id="9" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="9" name="Documentação" color="#6666ff" meeting="false" start="2026-08-31" duration="1" complete="0" thirdDate="2026-08-31" thirdDate-constraint="0" expand="true">
+            <notes>
+                <![CDATA[Nessa etapa iremos começar a Documentação do projeto.]]>
+            </notes>
+            <depend id="10" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="10" name="Colocando em Prática" color="#6666ff" meeting="false" start="2026-09-01" duration="3" complete="0" thirdDate="2026-08-24" thirdDate-constraint="0" expand="true">
+            <notes>
+                <![CDATA[Nessa etapa iremos unir todas as etapas anteriores e colocar em prática tudo o que foi planejado e montar o Banco de Dados]]>
+            </notes>
+        </task>
+        <task id="11" name="Backend" color="#cc00cc" meeting="false" start="2026-09-04" duration="33" complete="0" thirdDate="2026-08-17" thirdDate-constraint="0" expand="true"/>
+        <task id="12" name="Definir a Estrutura" color="#cc00cc" meeting="false" start="2026-09-04" duration="8" complete="0" thirdDate="2026-08-17" thirdDate-constraint="0" expand="true">
+            <depend id="13" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="13" name="Lógica do Servidor e Integração" color="#cc00cc" meeting="false" start="2026-09-16" duration="13" complete="0" thirdDate="2026-08-17" thirdDate-constraint="0" expand="true">
+            <notes>
+                <![CDATA[Nessa etapa do Backend, desenvolveremos todas as regras de negócios do sistema, construção e finalização das rotas e endpoints API e conexão e testes com serviços externos necessários.]]>
+            </notes>
+            <depend id="15" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="15" name="Segurança e Validação de Dados" color="#cc00cc" meeting="false" start="2026-10-05" duration="4" complete="0" thirdDate="2026-08-31" thirdDate-constraint="0" expand="true">
+            <notes>
+                <![CDATA[Nessa etapa iremos realizar a parte de implementação de sistemas de login, controle de acessos e permissões, validação de todos os dados enviados nas requisições e criação de tratamento global para evitar tratamentos.]]>
+            </notes>
+            <depend id="16" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="16" name="Testes Automatizados e Qualidade" color="#cc00cc" meeting="false" start="2026-10-09" duration="4" complete="0" thirdDate="2026-08-31" thirdDate-constraint="0" expand="true">
+            <notes>
+                <![CDATA[Escrita completa de testes unitários para as funções principais, execução de testes de integração envolvendo as rotas e o banco pronto e dentificação rápida de brechas de segurança ou falhas lógicas.]]>
+            </notes>
+            <depend id="17" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="17" name="Infraestrutura, Docker e Deploy" color="#cc00cc" meeting="false" start="2026-10-15" duration="2" complete="0" thirdDate="2026-09-21" thirdDate-constraint="0" expand="true">
+            <notes>
+                <![CDATA[Criação das imagens do Docker para empacotar a aplicação backend, configuração básica de ferramentas de CI/CD para automação de entregas e deploy da aplicação no provedor de nuvem selecionado.]]>
+            </notes>
+            <depend id="18" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="18" name="Ajustes Finais e Homologação" color="#cc00cc" meeting="false" start="2026-10-19" duration="2" complete="0" thirdDate="2026-09-14" thirdDate-constraint="0" expand="true">
+            <notes>
+                <![CDATA[Análise dos primeiros logs gerados pelo backend na nuvem, ajustes finais de performance e correção de bugs de última hora e liberação do ambiente pronto para o consumo do frontend.]]>
+            </notes>
+        </task>
+        <task id="19" name="Frontend" color="#ff0000" meeting="false" start="2026-10-01" duration="23" complete="0" thirdDate="2026-07-01" thirdDate-constraint="0" expand="true"/>
+        <task id="20" name="Configuração e Componentes Base" color="#ff0000" meeting="false" start="2026-10-01" duration="5" complete="0" thirdDate="2026-07-01" thirdDate-constraint="0" expand="true">
+            <notes>
+                <![CDATA[Inicialização do projeto e configuração do framework (React, Next.js, Vue, etc.), definição rápida da identidade visual (cores, fontes e reset de CSS) e criação apenas dos componentes base essenciais (botão, input e container principal).]]>
+            </notes>
+            <depend id="21" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="21" name="Desenvolvimento de Telas e Responsividade" color="#ff0000" meeting="false" start="2026-10-08" duration="7" complete="0" thirdDate="2026-07-01" thirdDate-constraint="0" expand="true">
+            <notes>
+                <![CDATA[Construção visual ágil de todas as páginas do sistema, aplicação de design responsivo focado em computadores e celulares (Mobile-First) e uso de bibliotecas de componentes prontas para acelerar a montagem dos layouts.]]>
+            </notes>
+            <depend id="22" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="22" name="Gerenciamento de Estado e Rotas" color="#ff0000" meeting="false" start="2026-10-19" duration="4" complete="0" thirdDate="2026-06-01" thirdDate-constraint="0" expand="true">
+            <notes>
+                <![CDATA[Configuração do roteamento de páginas e bloqueio de telas privadas (autenticação) e implementação de uma gerência de estado simples para dados globais (ex: dados do usuário).]]>
+            </notes>
+            <depend id="23" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="23" name="Integração com o Backend e APIs" color="#ff0000" meeting="false" start="2026-10-23" duration="3" complete="0" thirdDate="2026-05-01" thirdDate-constraint="0" expand="true">
+            <notes>
+                <![CDATA[Conexão das telas com os endpoints e rotas já estruturados do seu backend, criação de estados visuais de carregamento (loaders/spinners) para o usuário e tratamento básico das respostas de erro enviadas pelo servidor.]]>
+            </notes>
+            <depend id="24" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="24" name="Validações de Formulários e Ajustes" color="#ff0000" meeting="false" start="2026-10-28" duration="3" complete="0" thirdDate="2026-05-01" thirdDate-constraint="0" expand="true">
+            <notes>
+                <![CDATA[Validação de campos de texto (e-mail, senhas, valores) antes do envio dos dados, testes manuais do fluxo completo para caçar e corrigir bugs visuais críticos e ajustes rápidos de alinhamento e usabilidade da interface.]]>
+            </notes>
+            <depend id="25" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="25" name="Otimização e Deploy Final" color="#ff0000" meeting="false" start="2026-11-02" duration="1" complete="0" thirdDate="2026-05-01" thirdDate-constraint="0" expand="true">
+            <notes>
+                <![CDATA[Limpeza de códigos mortos e compressão de imagens pesadas, deploy rápido em plataformas automatizadas (Vercel, Netlify ou Amplify) e teste definitivo de ponta a ponta na nuvem para garantir que front e back conversam.]]>
+            </notes>
+        </task>
+        <task id="26" name="Mobile" color="#00ff66" meeting="false" start="2026-10-01" duration="23" complete="0" thirdDate="2026-08-03" thirdDate-constraint="0" expand="true"/>
+        <task id="27" name="Configuração do Ambiente e Navegação" color="#00ff66" meeting="false" start="2026-10-01" duration="3" complete="0" thirdDate="2026-08-03" thirdDate-constraint="0" expand="true">
+            <notes>
+                <![CDATA[Inicialização do projeto (Expo/React Native ou Flutter) e estrutura de pastas, configuração do sistema de navegação por abas ou gavetas (Tab/Stack Navigation) e criação dos componentes visuais nativos base (botões, campos de texto e loaders).]]>
+            </notes>
+            <depend id="29" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="29" name="Construção das Telas e UI Nativa" color="#00ff66" meeting="false" start="2026-10-06" duration="8" complete="0" thirdDate="2026-08-03" thirdDate-constraint="0" expand="true">
+            <notes>
+                <![CDATA[Desenvolvimento visual de todas as telas do aplicativo, adaptação do layout para diferentes tamanhos de tela e tratamento de áreas seguras (Safe Area para notch de celulares) e implementação do teclado inteligente (fazer a tela rolar quando o teclado abrir).]]>
+            </notes>
+            <depend id="30" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="30" name="Gerenciamento de Estado e Segurança Local" color="#00ff66" meeting="false" start="2026-10-16" duration="2" complete="0" thirdDate="2026-08-03" thirdDate-constraint="0" expand="true">
+            <notes>
+                <![CDATA[Configuração do estado global para controle de sessão do usuário, implementação do armazenamento seguro local (salvar o token de login para o usuário não precisar logar toda vez que abrir o app) e proteção de rotas para impedir acesso a telas restritas sem login.]]>
+            </notes>
+            <depend id="31" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="31" name="Integração com o Backend e APIs" color="#00ff66" meeting="false" start="2026-10-20" duration="4" complete="0" thirdDate="2026-08-03" thirdDate-constraint="0" expand="true">
+            <notes>
+                <![CDATA[Conexão do aplicativo com as mesmas rotas de API consumidas pelo Frontend, tratamento de estados sem conexão (exibir aviso caso o usuário fique sem internet) e configuração de requisições nativas rápidas e tratamento de erros do servidor.]]>
+            </notes>
+            <depend id="32" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="32" name="Validações e Testes em Dispositivos Reais" color="#00ff66" meeting="false" start="2026-10-26" duration="3" complete="0" thirdDate="2026-08-03" thirdDate-constraint="0" expand="true">
+            <notes>
+                <![CDATA[Validação de campos de formulário e máscaras de digitação (telefones, CPF, etc.), testes manuais exaustivos em emuladores e em celulares físicos (Android e iOS) e ajustes de performance em listas longas para evitar travamentos na rolagem da tela.]]>
+            </notes>
+            <depend id="33" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="33" name="Geração de Builds e Preparação para as Lojas" color="#00ff66" meeting="false" start="2026-10-29" duration="3" complete="0" thirdDate="2026-08-03" thirdDate-constraint="0" expand="true">
+            <notes>
+                <![CDATA[Geração dos arquivos finais de distribuição (.apk / .aab para Android e .ipa para iOS), configuração de ícones do app e telas de carregamento (Splash Screens) e preparação dos cadastros iniciais nos painéis da Google Play Console e Apple Developer.]]>
+            </notes>
+        </task>
+        <task id="34" name="Chatbot" color="#ff0066" meeting="false" start="2026-11-02" duration="11" complete="0" thirdDate="2026-05-01" thirdDate-constraint="0" expand="true"/>
+        <task id="35" name="Estruturação das intenções de conversa e fluxos de respostas do bot" color="#ff0066" meeting="false" start="2026-11-02" duration="5" complete="0" thirdDate="2026-05-01" thirdDate-constraint="0" expand="true">
+            <depend id="36" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="36" name="Integração técnica do Chatbot com a API do seu backend e interfaces (Web/Mobile)" color="#ff0066" meeting="false" start="2026-11-09" duration="4" complete="0" thirdDate="2026-05-01" thirdDate-constraint="0" expand="true">
+            <depend id="37" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="37" name="Testes de conversação, tratamento de respostas erradas e ajustes finos na inteligência do bot" color="#ff0066" meeting="false" start="2026-11-13" duration="2" complete="0" thirdDate="2026-11-02" thirdDate-constraint="0" expand="true"/>
+        <task id="39" name="Cibersegurança" color="#ff0066" meeting="false" start="2026-11-17" duration="8" complete="0" thirdDate="2026-10-26" thirdDate-constraint="0" expand="true"/>
+        <task id="40" name="Implementação de criptografia de senhas, validação rígida de dados e proteção de rotas (evitando ataques como SQL Injection e XSS)" color="#ff0066" meeting="false" start="2026-11-17" duration="4" complete="0" thirdDate="2026-10-26" thirdDate-constraint="0" expand="true">
+            <depend id="41" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="41" name="Configuração de HTTPS, políticas de CORS seguras e revisão de chaves e variáveis de ambiente confidenciais" color="#ff0066" meeting="false" start="2026-11-23" duration="3" complete="0" thirdDate="2026-10-26" thirdDate-constraint="0" expand="true">
+            <depend id="42" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="42" name="Execução de testes de vulnerabilidade simulando ataques para corrigir brechas abertas" color="#ff0066" meeting="false" start="2026-11-26" duration="1" complete="0" thirdDate="2026-10-26" thirdDate-constraint="0" expand="true"/>
+        <task id="43" name="Gestão de Projetos" color="#000000" meeting="false" start="2026-11-27" duration="5" complete="0" thirdDate="2026-10-26" thirdDate-constraint="0" expand="true"/>
+        <task id="44" name="Escrita e organização da documentação técnica do projeto (arquitetura, diagramas e manuais de uso)" color="#000000" meeting="false" start="2026-11-27" duration="2" complete="0" thirdDate="2026-10-26" thirdDate-constraint="0" expand="true">
+            <depend id="45" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="45" name="Alinhamento final do cronograma real versus planejado e consolidação dos relatórios das matérias" color="#000000" meeting="false" start="2026-12-01" duration="2" complete="0" thirdDate="2026-10-26" thirdDate-constraint="0" expand="true">
+            <depend id="46" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="46" name="Revisão geral de ponta a ponta e preparação da entrega oficial na plataforma de ensino" color="#000000" meeting="false" start="2026-12-03" duration="1" complete="0" thirdDate="2026-11-02" thirdDate-constraint="0" expand="true"/>
+    </tasks>
+    <resources>
+        <resource id="0" name="Enzo Augusto Bartolo Pacheco e Oliveira" function="Default:0" contacts="" phone=""/>
+        <resource id="1" name="Fabiano Lira de Lima" function="Default:0" contacts="" phone=""/>
+        <resource id="2" name="Eduardo Sabio Zibini" function="Default:0" contacts="" phone=""/>
+        <resource id="3" name="Gabriel Santos" function="Default:0" contacts="" phone=""/>
+        <resource id="4" name="Guilherme Silva" function="Default:0" contacts="" phone=""/>
+        <resource id="5" name="Danilo Moen" function="Default:0" contacts="" phone=""/>
+        <resource id="6" name="Rafael Ribeiro Gonçalves" function="Default:0" contacts="" phone=""/>
+    </resources>
+    <allocations>
+        <allocation task-id="1" resource-id="0" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="2" resource-id="0" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="3" resource-id="0" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="4" resource-id="0" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="5" resource-id="0" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="6" resource-id="0" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="8" resource-id="0" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="9" resource-id="0" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="10" resource-id="0" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="39" resource-id="1" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="40" resource-id="1" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="41" resource-id="1" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="42" resource-id="1" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="19" resource-id="2" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="20" resource-id="2" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="21" resource-id="2" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="22" resource-id="2" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="23" resource-id="2" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="24" resource-id="2" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="25" resource-id="2" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="26" resource-id="2" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="29" resource-id="2" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="30" resource-id="2" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="31" resource-id="2" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="32" resource-id="2" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="33" resource-id="2" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="19" resource-id="3" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="20" resource-id="3" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="21" resource-id="3" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="22" resource-id="3" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="23" resource-id="3" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="24" resource-id="3" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="25" resource-id="3" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="26" resource-id="3" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="27" resource-id="3" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="29" resource-id="3" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="30" resource-id="3" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="31" resource-id="3" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="32" resource-id="3" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="33" resource-id="3" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="34" resource-id="4" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="35" resource-id="4" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="36" resource-id="4" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="37" resource-id="4" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="11" resource-id="5" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="12" resource-id="5" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="13" resource-id="5" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="15" resource-id="5" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="16" resource-id="5" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="17" resource-id="5" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="18" resource-id="5" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="43" resource-id="6" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="44" resource-id="6" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="45" resource-id="6" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="46" resource-id="6" function="Default:0" responsible="true" load="100.0"/>
+    </allocations>
+    <vacations/>
+    <previous/>
+    <roles roleset-name="Default"/>
+</project>
