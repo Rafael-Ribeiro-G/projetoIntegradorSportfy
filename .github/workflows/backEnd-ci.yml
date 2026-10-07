@@ -1,0 +1,51 @@
+# CI do BackEnd: a cada push/pull request que mexe em backEnd/ roda todos os testes
+# e confere se a imagem Docker é gerada.
+name: CI BackEnd
+
+on:
+  push:
+    branches: [ main, backEnd ]
+    paths:
+      - 'backEnd/**'
+      - '.github/workflows/backEnd-ci.yml'
+  pull_request:
+    paths:
+      - 'backEnd/**'
+      - '.github/workflows/backEnd-ci.yml'
+
+# o código do back fica na pasta backEnd/ do repositório do grupo
+defaults:
+  run:
+    working-directory: backEnd
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: backEnd/pom.xml
+
+      - name: Testes unitários e de integração
+        run: mvn -B verify
+
+      - name: Relatório dos testes (se falhar)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-testes
+          path: backEnd/target/surefire-reports/
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: testes
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build da imagem Docker
+        run: docker build -t sportfy-backend:${{ github.sha }} .

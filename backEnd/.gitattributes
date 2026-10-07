@@ -1,0 +1,7 @@
+# Scripts de servidor sempre com quebra de linha Linux (LF), mesmo se commitados pelo Windows.
+# Sem isso o bash no servidor falha com erros como "$'\r': command not found".
+*.sh   text eol=lf
+*.sql  text eol=lf
+Dockerfile text eol=lf
+*.yml  text eol=lf
+.env.example text eol=lf

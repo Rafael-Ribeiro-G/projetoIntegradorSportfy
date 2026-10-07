@@ -1,0 +1,19 @@
+# Deploy no SERVIDOR do projeto, onde o PostgreSQL já está instalado direto na máquina.
+# A API roda em container usando a rede do host, então enxerga o Postgres em localhost:5432.
+#
+#   cp .env.example .env   (e preencha)
+#   docker compose -f docker-compose.prod.yml up -d --build
+#   docker compose -f docker-compose.prod.yml logs -f
+services:
+  api:
+    build: .
+    image: sportfy-backend:latest
+    container_name: sportfy-api
+    restart: unless-stopped
+    network_mode: host
+    env_file: .env
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:sportfy;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+sportfy:
+  jwt:
+    secret: chave-de-teste-com-mais-de-32-caracteres-para-hmac-sha256
+    expiracao-minutos: 60
+  cors:
+    origens-permitidas: http://localhost:3000
+  login:
+    max-tentativas: 3
+    bloqueio-minutos: 15
+  admin:
+    email: admin@sportfy.test
+    senha: Admin12345
+
+logging:
+  level:
+    root: WARN
