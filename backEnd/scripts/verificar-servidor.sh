@@ -120,7 +120,7 @@ SQL
             fi
             if [[ -n "$SEM_PERMISSAO" ]]; then
                 erro "${ENV[DB_USER]} não pode ler/gravar em:$SEM_PERMISSAO"
-                dica "o responsável do banco roda: sudo -u postgres psql -d $DB_NOME -f sql/00_preparar_banco.sql"
+                dica "o responsável do banco roda: sudo -u postgres psql -d $DB_NOME < sql/00_preparar_banco.sql"
             elif [[ -z "$FALTANDO" ]]; then
                 ok "${ENV[DB_USER]} pode ler e gravar dados nessas tabelas."
             fi
@@ -129,7 +129,7 @@ SQL
                 QTD_ESPORTES=$(psql "${CONEXAO[@]}" -d "$DB_NOME" -c "select count(*) from \"$SCHEMA\".esportes" 2>/dev/null)
                 if [[ "${QTD_ESPORTES:-0}" == "0" ]]; then
                     aviso "A tabela esportes está vazia: não dá para cadastrar quadras nem partidas."
-                    dica "o responsável do banco roda: sudo -u postgres psql -d $DB_NOME -f sql/01_esportes_iniciais.sql"
+                    dica "o responsável do banco roda: sudo -u postgres psql -d $DB_NOME < sql/01_esportes_iniciais.sql"
                 else
                     ok "$QTD_ESPORTES esporte(s) cadastrado(s)."
                 fi

@@ -2,7 +2,10 @@
 -- Dá ao usuário da API (back_sportfy) acesso às tabelas do banco do Sportfy.
 -- Quem roda: o responsável pelo banco, como superusuário, UMA VEZ:
 --
---   sudo -u postgres psql -d sportfy -f sql/00_preparar_banco.sql
+--   sudo -u postgres psql -d sportfy < sql/00_preparar_banco.sql
+--
+-- (use "<" e não "-f": assim quem lê o arquivo é você, e não o usuário postgres,
+--  que não tem acesso à pasta home dos outros usuários)
 --
 -- Pode rodar de novo sem problema (não apaga nada, não muda estrutura).
 -- Sem "-v usuario=...", usa back_sportfy. Sem "-v schema=...", usa public.
@@ -38,11 +41,11 @@ GRANT USAGE ON SCHEMA :"schema" TO :"usuario";
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA :"schema" TO :"usuario";
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA :"schema" TO :"usuario";
 
--- tabelas criadas no futuro pelo dono atual do schema também ficam liberadas
-SELECT nspowner::regrole::text AS dono_schema FROM pg_namespace WHERE nspname = :'schema' \gset
-ALTER DEFAULT PRIVILEGES FOR ROLE :"dono_schema" IN SCHEMA :"schema"
+-- tabelas criadas no futuro pelo dono do banco (quem cria as tabelas) também ficam liberadas
+SELECT pg_get_userbyid(datdba) AS dono_banco FROM pg_database WHERE datname = current_database() \gset
+ALTER DEFAULT PRIVILEGES FOR ROLE :"dono_banco" IN SCHEMA :"schema"
     GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO :"usuario";
-ALTER DEFAULT PRIVILEGES FOR ROLE :"dono_schema" IN SCHEMA :"schema"
+ALTER DEFAULT PRIVILEGES FOR ROLE :"dono_banco" IN SCHEMA :"schema"
     GRANT USAGE, SELECT ON SEQUENCES TO :"usuario";
 
 \echo '>> Pronto. Confira com: bash scripts/verificar-servidor.sh'

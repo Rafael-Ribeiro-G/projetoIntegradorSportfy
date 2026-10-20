@@ -70,8 +70,8 @@ git clone -b backEnd https://github.com/Rafael-Ribeiro-G/projetoIntegradorSportf
 cd projetoIntegradorSportfy/backEnd
 
 # 1) uma vez só, pelo responsável do banco (só dados: SELECT/INSERT/UPDATE/DELETE)
-sudo -u postgres psql -d sportfy -f sql/00_preparar_banco.sql
-sudo -u postgres psql -d sportfy -f sql/01_esportes_iniciais.sql   # se não houver esportes
+sudo -u postgres psql -d sportfy < sql/00_preparar_banco.sql
+sudo -u postgres psql -d sportfy < sql/01_esportes_iniciais.sql   # se não houver esportes
 
 # 2) configuração
 cp .env.example .env && chmod 600 .env

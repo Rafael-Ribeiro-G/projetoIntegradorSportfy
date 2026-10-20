@@ -2,7 +2,7 @@
 -- Cadastra os esportes básicos na tabela public.esportes (só os que ainda não existem).
 -- Opcional: rode se a tabela estiver vazia. Quem roda: o responsável pelo banco.
 --
---   sudo -u postgres psql -d sportfy -f sql/01_esportes_iniciais.sql
+--   sudo -u postgres psql -d sportfy < sql/01_esportes_iniciais.sql
 -- =============================================================
 INSERT INTO public.esportes (nome, quantidade_jogadores_padrao)
 SELECT v.nome, v.qtd
