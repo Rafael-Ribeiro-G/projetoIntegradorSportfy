@@ -68,6 +68,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
                         .requestMatchers(ROTAS_SWAGGER).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/registro", "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/uploads/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/esportes", "/api/esportes/{id}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/locais", "/api/locais/{id}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/quadras", "/api/quadras/{id}").permitAll()

@@ -140,6 +140,7 @@ public class PartidaService {
                 .map(pp -> new ParticipanteResponse(
                         pp.getUsuario().getId(),
                         pp.getUsuario().getNome(),
+                        pp.getUsuario().getFotoUrl(),
                         pp.getUsuario().getNivelHabilidade(),
                         pp.getUsuario().getId().equals(criadorId)))
                 // quem criou aparece primeiro

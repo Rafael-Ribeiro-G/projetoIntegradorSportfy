@@ -23,6 +23,8 @@ sportfy:
   login:
     max-tentativas: 3
     bloqueio-minutos: 15
+  uploads:
+    pasta: target/uploads-teste
 
 logging:
   level:

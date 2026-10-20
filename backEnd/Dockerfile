@@ -15,11 +15,13 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 ENV TZ=America/Sao_Paulo \
-    JAVA_OPTS="-XX:MaxRAMPercentage=75 -Djava.security.egd=file:/dev/./urandom"
+    JAVA_OPTS="-XX:MaxRAMPercentage=75 -Djava.security.egd=file:/dev/./urandom" \
+    UPLOADS_PASTA=/app/uploads
 
 # roda como usuário sem privilégios (boa prática de segurança)
 RUN addgroup -S sportfy && adduser -S sportfy -G sportfy \
-    && apk add --no-cache wget tzdata
+    && apk add --no-cache wget tzdata \
+    && mkdir -p /app/uploads && chown sportfy:sportfy /app/uploads
 USER sportfy
 
 COPY --from=build /app/target/sportfy-backend.jar app.jar

@@ -123,6 +123,7 @@ Os scripts funcionam com `bash scripts/...` mesmo se o Git (vindo do Windows) ti
 | `LOGIN_MAX_TENTATIVAS` | não | `5` | Erros de senha antes do bloqueio |
 | `LOGIN_BLOQUEIO_MINUTOS` | não | `15` | Tempo de bloqueio |
 | `SWAGGER_ENABLED` | não | `true` | Desligue em produção final se quiser |
+| `UPLOADS_PASTA` | não | `uploads` (no Docker: `/app/uploads`, volume `sportfy-uploads`) | Pasta onde ficam as imagens enviadas |
 | `JPA_DDL_AUTO` | não | `validate` | Hibernate só confere as tabelas na subida; nunca use `update`/`create` (a estrutura é do Enzo) |
 
 ## 5. Estrutura

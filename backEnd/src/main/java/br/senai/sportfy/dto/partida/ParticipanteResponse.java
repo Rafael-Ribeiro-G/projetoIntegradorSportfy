@@ -2,6 +2,6 @@ package br.senai.sportfy.dto.partida;
 
 import java.util.UUID;
 
-/** Participante confirmado de uma partida (sem e-mail/telefone). */
-public record ParticipanteResponse(UUID id, String nome, Integer nivelHabilidade, boolean criador) {
+/** Participante confirmado de uma partida (sem e-mail/telefone). fotoUrl vazio = sem foto. */
+public record ParticipanteResponse(UUID id, String nome, String fotoUrl, Integer nivelHabilidade, boolean criador) {
 }

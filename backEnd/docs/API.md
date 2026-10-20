@@ -107,6 +107,24 @@ Depois de 5 senhas erradas o e-mail fica bloqueado por 15 minutos (**429**).
 
 ---
 
+## Imagens (foto de perfil e capa de evento)
+
+As imagens ficam guardadas no próprio servidor da API. O fluxo tem 2 passos:
+
+1. **Enviar o arquivo:** `POST /api/uploads/imagens` — logado, `multipart/form-data`, campo **`arquivo`**.
+   Aceita JPG, PNG ou WEBP de até **5 MB** (o tipo é conferido pelo conteúdo, não pelo nome).
+   ```json
+   201 { "url": "http://100.68.85.13:8080/uploads/64dbde7d-....png", "nome": "64dbde7d-....png", "tipo": "image/png", "tamanhoBytes": 48213 }
+   ```
+2. **Usar a `url`:** coloque-a em `fotoUrl` (`PUT /api/usuarios/me` ou no registro) ou em `imagemUrl` (`POST`/`PUT /api/partidas`).
+
+`GET /uploads/{nome}` é público e devolve a imagem (com cache de 30 dias; o nome nunca muda).
+Erros: `400` arquivo vazio ou que não é imagem, `401` sem login, `413` maior que 5 MB, `404` imagem inexistente.
+Exemplo React Native: `const form = new FormData(); form.append('arquivo', { uri, name: 'foto.jpg', type: 'image/jpeg' });`
+e `fetch(url, { method: 'POST', headers: { Authorization: 'Bearer ' + token }, body: form })` (não defina o Content-Type à mão).
+
+---
+
 ## Esportes — público, só leitura
 
 `GET /api/esportes` →
@@ -200,7 +218,7 @@ Resposta:
       "quadra": { "id": "5fa848b1-...", "nome": "Quadra 1", "precoHora": 80.50 },
       "local": { "id": "fe0b55e3-...", "nome": "Parque Ibirapuera", "endereco": "...",
                  "tipo": "QUADRA", "latitude": -23.5874, "longitude": -46.6576 },
-      "criador": { "id": "c3062661-...", "nome": "Ana Souza" },
+      "criador": { "id": "c3062661-...", "nome": "Ana Souza", "fotoUrl": null },
       "dataHoraInicio": "2026-10-25T19:00:00",
       "dataHoraFim": "2026-10-25T20:30:00",
       "duracaoMinutos": 90,
@@ -276,10 +294,14 @@ Sai da partida. Quem criou não pode sair (deve cancelar).
 
 ### `GET /api/partidas/{id}/participantes` — logado
 ```json
-[ { "id": "c3062661-...", "nome": "Ana Souza", "nivelHabilidade": 3, "criador": true }, ... ]
+[ { "id": "c3062661-...", "nome": "Ana Souza", "fotoUrl": "http://100.68.85.13:8080/uploads/....jpg", "nivelHabilidade": 3, "criador": true }, ... ]
 ```
 
 ---
+
+## Mudanças de 20/10 (tarde): imagens
+- Novo upload: `POST /api/uploads/imagens` devolve a `url` para `fotoUrl`/`imagemUrl`.
+- `fotoUrl` agora vem em cada participante (`/participantes`), no `criador` do evento e no `dono` do local.
 
 ## Mudanças de 20/10 (eventos sem quadra)
 - Evento/partida tem **local + esporte**; a **quadra virou opcional**. Novos campos: `titulo`, `descricao`, `imagemUrl`.

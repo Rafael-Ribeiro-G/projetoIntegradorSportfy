@@ -112,6 +112,20 @@ public class GlobalExceptionHandler {
         return responder(HttpStatus.METHOD_NOT_ALLOWED, "Método HTTP não suportado nesta rota.", req, null);
     }
 
+    /** Upload acima do limite configurado (spring.servlet.multipart.max-file-size). */
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErroResponse> tratarUploadGrande(
+            org.springframework.web.multipart.MaxUploadSizeExceededException ex, HttpServletRequest req) {
+        return responder(HttpStatus.PAYLOAD_TOO_LARGE, "A imagem deve ter no máximo 5 MB.", req, null);
+    }
+
+    /** Requisição multipart sem o campo do arquivo. */
+    @ExceptionHandler(org.springframework.web.multipart.support.MissingServletRequestPartException.class)
+    public ResponseEntity<ErroResponse> tratarParteFaltando(
+            org.springframework.web.multipart.support.MissingServletRequestPartException ex, HttpServletRequest req) {
+        return responder(HttpStatus.BAD_REQUEST, "Envie a imagem no campo '" + ex.getRequestPartName() + "'.", req, null);
+    }
+
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     public ResponseEntity<ErroResponse> tratarMediaType(HttpMediaTypeNotSupportedException ex, HttpServletRequest req) {
         return responder(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Envie o corpo como application/json.", req, null);

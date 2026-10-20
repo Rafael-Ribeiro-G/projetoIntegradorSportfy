@@ -23,7 +23,8 @@ class SegurancaUnitTest {
         return new SportfyProperties(
                 new SportfyProperties.Jwt(segredo, 60, "sportfy-api"),
                 new SportfyProperties.Cors("http://localhost:3000"),
-                new SportfyProperties.Login(maxTentativas, 15));
+                new SportfyProperties.Login(maxTentativas, 15),
+                new SportfyProperties.Uploads(null));
     }
 
     private static final UUID ID = UUID.fromString("7f1c2a52-1b6e-4c1e-9d0a-2b9f3c8e4a10");

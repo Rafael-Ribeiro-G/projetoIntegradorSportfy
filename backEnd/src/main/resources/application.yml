@@ -24,6 +24,10 @@ spring:
       hibernate:
         format_sql: false
         default_schema: ${DB_SCHEMA:public}
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
   jackson:
     default-property-inclusion: non_null
     deserialization:
@@ -41,6 +45,9 @@ sportfy:
   login:
     max-tentativas: ${LOGIN_MAX_TENTATIVAS:5}
     bloqueio-minutos: ${LOGIN_BLOQUEIO_MINUTOS:15}
+  uploads:
+    # fotos de perfil e capas de evento; no Docker é um volume (não se perde ao atualizar)
+    pasta: ${UPLOADS_PASTA:uploads}
 
 springdoc:
   api-docs:

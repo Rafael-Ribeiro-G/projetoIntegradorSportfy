@@ -12,8 +12,14 @@ services:
     restart: unless-stopped
     network_mode: host
     env_file: .env
+    volumes:
+      # imagens enviadas pelo app (fotos de perfil e de eventos); sobrevivem a novos deploys
+      - sportfy-uploads:/app/uploads
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
+
+volumes:
+  sportfy-uploads:
