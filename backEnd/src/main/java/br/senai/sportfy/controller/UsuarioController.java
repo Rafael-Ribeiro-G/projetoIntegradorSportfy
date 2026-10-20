@@ -1,5 +1,7 @@
 package br.senai.sportfy.controller;
 
+import java.util.UUID;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +14,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.senai.sportfy.dto.auth.TokenResponse;
-import br.senai.sportfy.dto.evento.MeusEventosResponse;
+import br.senai.sportfy.dto.partida.MinhasPartidasResponse;
 import br.senai.sportfy.dto.usuario.AlterarSenhaRequest;
 import br.senai.sportfy.dto.usuario.AtualizarPerfilRequest;
 import br.senai.sportfy.dto.usuario.ConfirmarSenhaRequest;
@@ -20,7 +22,7 @@ import br.senai.sportfy.dto.usuario.DadosPessoaisResponse;
 import br.senai.sportfy.dto.usuario.PerfilPublicoResponse;
 import br.senai.sportfy.dto.usuario.UsuarioResponse;
 import br.senai.sportfy.security.UsuarioAutenticado;
-import br.senai.sportfy.service.EventoService;
+import br.senai.sportfy.service.PartidaService;
 import br.senai.sportfy.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -35,11 +37,11 @@ import jakarta.validation.Valid;
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
-    private final EventoService eventoService;
+    private final PartidaService partidaService;
 
-    public UsuarioController(UsuarioService usuarioService, EventoService eventoService) {
+    public UsuarioController(UsuarioService usuarioService, PartidaService partidaService) {
         this.usuarioService = usuarioService;
-        this.eventoService = eventoService;
+        this.partidaService = partidaService;
     }
 
     @GetMapping("/me")
@@ -49,7 +51,7 @@ public class UsuarioController {
     }
 
     @PutMapping("/me")
-    @Operation(summary = "Atualiza o perfil (nome, telefone, cidade, bio, nível, localização e esportes favoritos)")
+    @Operation(summary = "Atualiza o perfil (nome, telefone e nível de habilidade de 1 a 5)")
     public UsuarioResponse atualizar(@Parameter(hidden = true) @AuthenticationPrincipal UsuarioAutenticado usuario,
                                      @Valid @RequestBody AtualizarPerfilRequest request) {
         return usuarioService.atualizarPerfil(usuario.id(), request);
@@ -62,10 +64,10 @@ public class UsuarioController {
         return usuarioService.alterarSenha(usuario.id(), request);
     }
 
-    @GetMapping("/me/eventos")
-    @Operation(summary = "Eventos que o usuário organiza e eventos em que está confirmado")
-    public MeusEventosResponse meusEventos(@Parameter(hidden = true) @AuthenticationPrincipal UsuarioAutenticado usuario) {
-        return eventoService.meusEventos(usuario.id());
+    @GetMapping("/me/partidas")
+    @Operation(summary = "Partidas que o usuário criou e partidas em que está confirmado")
+    public MinhasPartidasResponse minhasPartidas(@Parameter(hidden = true) @AuthenticationPrincipal UsuarioAutenticado usuario) {
+        return partidaService.minhasPartidas(usuario.id());
     }
 
     @GetMapping("/me/dados")
@@ -76,7 +78,7 @@ public class UsuarioController {
 
     @PostMapping("/me/exclusao")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Operation(summary = "LGPD: exclui (anonimiza) a conta. Exige confirmação da senha")
+    @Operation(summary = "LGPD: exclui a conta (e as partidas criadas por ela). Exige confirmação da senha")
     public void excluirConta(@Parameter(hidden = true) @AuthenticationPrincipal UsuarioAutenticado usuario,
                              @Valid @RequestBody ConfirmarSenhaRequest request) {
         usuarioService.excluirConta(usuario.id(), request.senha());
@@ -84,7 +86,7 @@ public class UsuarioController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Perfil público de outro usuário (sem e-mail/telefone)")
-    public PerfilPublicoResponse perfilPublico(@PathVariable Long id) {
+    public PerfilPublicoResponse perfilPublico(@PathVariable UUID id) {
         return usuarioService.perfilPublico(id);
     }
 }

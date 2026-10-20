@@ -7,16 +7,14 @@ import static br.senai.sportfy.dto.Validacoes.SENHA_FORTE;
 import static br.senai.sportfy.dto.Validacoes.TELEFONE;
 import static br.senai.sportfy.dto.Validacoes.TEXTO_SEGURO;
 
-import java.time.LocalDate;
-
-import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
+/** Tela Criar Conta. Telefone e nível de habilidade (1 a 5) são opcionais. */
 public record RegistroRequest(
 
         @NotBlank(message = "é obrigatório")
@@ -37,15 +35,7 @@ public record RegistroRequest(
         @Pattern(regexp = TELEFONE, message = MSG_TELEFONE)
         String telefone,
 
-        @Past(message = "deve ser uma data no passado")
-        LocalDate dataNascimento,
-
-        @Size(max = 100, message = "deve ter no máximo 100 caracteres")
-        @Pattern(regexp = TEXTO_SEGURO, message = MSG_TEXTO_SEGURO)
-        String cidade,
-
-        /* LGPD: o usuário precisa aceitar os termos de uso e a política de privacidade. */
-        @NotNull(message = "é obrigatório")
-        @AssertTrue(message = "é necessário aceitar os termos de uso e a política de privacidade")
-        Boolean aceiteTermos) {
+        @Min(value = 1, message = "deve ser de 1 a 5")
+        @Max(value = 5, message = "deve ser de 1 a 5")
+        Integer nivelHabilidade) {
 }

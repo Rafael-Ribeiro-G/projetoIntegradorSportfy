@@ -18,7 +18,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Lê o header "Authorization: Bearer <token>" e, se o token for válido e o usuário
- * estiver ativo, marca a requisição como autenticada.
+ * ainda existir, marca a requisição como autenticada.
  *
  * Não é um @Component de propósito: é criado dentro do SecurityConfig para não
  * ser registrado duas vezes como filtro do servlet.
@@ -45,8 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             String token = header.substring(PREFIXO.length()).trim();
             jwtService.validar(token).ifPresent(info -> usuarioRepository.findById(info.usuarioId())
-                    // conta desativada ou senha trocada depois da emissão do token => token não vale mais
-                    .filter(Usuario::isAtivo)
+                    // conta excluída (não encontra) ou senha trocada depois da emissão => token não vale mais
                     .filter(usuario -> jwtService.versaoSenha(usuario).equals(info.versaoSenha()))
                     .ifPresent(usuario -> autenticar(usuario, request)));
         }
@@ -54,7 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void autenticar(Usuario usuario, HttpServletRequest request) {
-        UsuarioAutenticado principal = new UsuarioAutenticado(usuario.getId(), usuario.getEmail(), usuario.getPerfil());
+        UsuarioAutenticado principal = new UsuarioAutenticado(usuario.getId(), usuario.getEmail());
         UsernamePasswordAuthenticationToken autenticacao =
                 new UsernamePasswordAuthenticationToken(principal, null, principal.authorities());
         autenticacao.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

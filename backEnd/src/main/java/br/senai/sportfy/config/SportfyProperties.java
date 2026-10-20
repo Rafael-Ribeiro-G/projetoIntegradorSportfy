@@ -9,7 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * Configurações próprias da aplicação (prefixo "sportfy" no application.yml).
  */
 @ConfigurationProperties(prefix = "sportfy")
-public record SportfyProperties(Jwt jwt, Cors cors, Login login, Admin admin) {
+public record SportfyProperties(Jwt jwt, Cors cors, Login login) {
 
     public record Jwt(String secret, long expiracaoMinutos, String emissor) {
     }
@@ -27,8 +27,5 @@ public record SportfyProperties(Jwt jwt, Cors cors, Login login, Admin admin) {
     }
 
     public record Login(int maxTentativas, long bloqueioMinutos) {
-    }
-
-    public record Admin(String email, String senha) {
     }
 }

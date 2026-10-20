@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -28,13 +27,11 @@ import br.senai.sportfy.security.RespostaErroJson;
 /**
  * Regras de acesso da API.
  *
- * Público: cadastro/login, lista de esportes, busca e detalhe de eventos, health check e Swagger.
- * Logado: todo o resto.
- * ADMIN: /api/admin/** e escrita em /api/esportes.
+ * Público: cadastro/login, consultas de esportes, locais, quadras e partidas, health check e Swagger.
+ * Logado: todo o resto (criar/editar, participar, perfil).
  */
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
 public class SecurityConfig {
 
     private static final String[] ROTAS_SWAGGER = {"/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html"};
@@ -72,13 +69,11 @@ public class SecurityConfig {
                         .requestMatchers(ROTAS_SWAGGER).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/registro", "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/esportes", "/api/esportes/{id}").permitAll()
-                        // sugestões precisa vir ANTES de /api/eventos/{id}, senão casaria com o {id}
-                        .requestMatchers(HttpMethod.GET, "/api/eventos/sugestoes").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/eventos", "/api/eventos/{id}").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/esportes").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/esportes/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/esportes/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/locais", "/api/locais/{id}").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/quadras", "/api/quadras/{id}").permitAll()
+                        // sugestões precisa vir ANTES de /api/partidas/{id}, senão casaria com o {id}
+                        .requestMatchers(HttpMethod.GET, "/api/partidas/sugestoes").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/partidas", "/api/partidas/{id}").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(respostaErro)

@@ -2,6 +2,10 @@
 #   docker compose up -d --build
 #   API:     http://localhost:8080
 #   Swagger: http://localhost:8080/swagger-ui.html
+#
+# Na primeira subida o Postgres local é criado com a MESMA estrutura do banco do servidor
+# (sql/estrutura_banco_enzo.sql) e com os 12 esportes (sql/01_esportes_iniciais.sql).
+# Para recriar do zero (apaga os dados locais):  docker compose down -v && docker compose up -d --build
 services:
   db:
     image: postgres:16-alpine
@@ -14,7 +18,9 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - sportfy-dados:/var/lib/postgresql/data
+      - sportfy-dados-v2:/var/lib/postgresql/data
+      - ./sql/estrutura_banco_enzo.sql:/docker-entrypoint-initdb.d/01-estrutura.sql:ro
+      - ./sql/01_esportes_iniciais.sql:/docker-entrypoint-initdb.d/02-esportes.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U back_sportfy -d sportfy"]
       interval: 5s
@@ -34,10 +40,9 @@ services:
       # segredo só para desenvolvimento local
       JWT_SECRET: segredo-local-de-desenvolvimento-nao-usar-em-producao
       CORS_ORIGENS: http://localhost:3000,http://localhost:8081,http://localhost:19006
-      ADMIN_EMAIL: admin@sportfy.local
-      ADMIN_SENHA: Admin12345
     ports:
       - "8080:8080"
 
 volumes:
-  sportfy-dados:
+  # "-v2": o banco local antigo (tabelas próprias da API) não é reaproveitado
+  sportfy-dados-v2:

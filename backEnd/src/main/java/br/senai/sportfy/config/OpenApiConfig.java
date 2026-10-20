@@ -10,8 +10,8 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 @Configuration
 @OpenAPIDefinition(info = @Info(
         title = "Sportfy API",
-        version = "1.0.0",
-        description = "API do Sportfy - organização de partidas e eventos esportivos entre pessoas próximas. "
+        version = "2.0.0",
+        description = "API do Sportfy - organização de partidas esportivas entre pessoas próximas. "
                 + "Faça login em /api/auth/login, copie o token e clique em 'Authorize'."))
 @SecurityScheme(name = "bearerAuth", type = SecuritySchemeType.HTTP, scheme = "bearer", bearerFormat = "JWT")
 public class OpenApiConfig {

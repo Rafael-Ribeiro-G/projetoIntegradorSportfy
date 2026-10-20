@@ -1,34 +1,29 @@
 -- =============================================================
--- Prepara o PostgreSQL do servidor para a API do Sportfy.
--- Rodar UMA VEZ, como superusuário, na pasta do projeto:
+-- Dá ao usuário da API (back_sportfy) acesso às tabelas do banco do Sportfy.
+-- Quem roda: o responsável pelo banco, como superusuário, UMA VEZ:
 --
---   sudo -u postgres psql -v db=NOME_DO_BANCO -f sql/00_preparar_banco.sql
+--   sudo -u postgres psql -d sportfy -f sql/00_preparar_banco.sql
 --
--- Pode rodar de novo sem problema (não apaga nada).
--- Sem "-v db=...", usa o banco "sportfy". O usuário padrão é back_sportfy
--- (mude com -v usuario=outro).
+-- Pode rodar de novo sem problema (não apaga nada, não muda estrutura).
+-- Sem "-v usuario=...", usa back_sportfy. Sem "-v schema=...", usa public.
 --
--- O que faz:
---   1. confere se o usuário da aplicação existe (a senha NÃO fica aqui);
---   2. cria o banco se ainda não existir, com esse usuário como dono;
---   3. garante que o usuário pode conectar e criar schemas no banco.
--- As TABELAS não são criadas aqui: o Flyway cria tudo, no schema "sportfy",
--- na primeira vez que a API sobe.
+-- O que libera: ler e gravar DADOS (SELECT, INSERT, UPDATE, DELETE) nas tabelas.
+-- O que NÃO libera: criar, alterar ou apagar tabelas. A estrutura do banco
+-- continua sendo responsabilidade do responsável pelo banco.
 -- =============================================================
 \set ON_ERROR_STOP on
 
-\if :{?db}
-\else
-  \set db sportfy
-\endif
 \if :{?usuario}
 \else
   \set usuario back_sportfy
 \endif
+\if :{?schema}
+\else
+  \set schema public
+\endif
 
-\echo '>> Banco:' :db '| Usuário da aplicação:' :usuario
+\echo '>> Banco:' :DBNAME '| Schema:' :schema '| Usuário da API:' :usuario
 
--- 1. usuário precisa existir (quem cria é o administrador do servidor, com a senha dele)
 SELECT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = :'usuario') AS usuario_existe \gset
 \if :usuario_existe
   \echo '>> Usuário encontrado.'
@@ -38,16 +33,16 @@ SELECT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = :'usuario') AS usuario_exi
   \quit
 \endif
 
--- 2. cria o banco (se não existir) com o usuário da aplicação como dono
-SELECT EXISTS (SELECT 1 FROM pg_database WHERE datname = :'db') AS banco_existe \gset
-\if :banco_existe
-  \echo '>> Banco já existe; mantendo o dono atual.'
-\else
-  SELECT format('CREATE DATABASE %I OWNER %I ENCODING %L TEMPLATE template0', :'db', :'usuario', 'UTF8') \gexec
-  \echo '>> Banco criado.'
-\endif
+GRANT CONNECT ON DATABASE :"DBNAME" TO :"usuario";
+GRANT USAGE ON SCHEMA :"schema" TO :"usuario";
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA :"schema" TO :"usuario";
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA :"schema" TO :"usuario";
 
--- 3. permissões: conectar e criar o schema "sportfy" (onde o Flyway coloca as tabelas)
-GRANT CONNECT, CREATE, TEMPORARY ON DATABASE :"db" TO :"usuario";
+-- tabelas criadas no futuro pelo dono atual do schema também ficam liberadas
+SELECT nspowner::regrole::text AS dono_schema FROM pg_namespace WHERE nspname = :'schema' \gset
+ALTER DEFAULT PRIVILEGES FOR ROLE :"dono_schema" IN SCHEMA :"schema"
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO :"usuario";
+ALTER DEFAULT PRIVILEGES FOR ROLE :"dono_schema" IN SCHEMA :"schema"
+    GRANT USAGE, SELECT ON SEQUENCES TO :"usuario";
 
-\echo '>> Pronto. Agora preencha o .env e rode: bash scripts/verificar-servidor.sh'
+\echo '>> Pronto. Confira com: bash scripts/verificar-servidor.sh'

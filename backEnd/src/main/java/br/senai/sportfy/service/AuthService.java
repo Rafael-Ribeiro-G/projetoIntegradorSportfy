@@ -1,8 +1,5 @@
 package br.senai.sportfy.service;
 
-import java.time.Clock;
-import java.time.LocalDateTime;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -10,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.senai.sportfy.domain.Usuario;
-import br.senai.sportfy.domain.enums.Perfil;
 import br.senai.sportfy.dto.auth.LoginRequest;
 import br.senai.sportfy.dto.auth.RegistroRequest;
 import br.senai.sportfy.dto.auth.TokenResponse;
@@ -31,18 +27,16 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final LoginAttemptService loginAttemptService;
-    private final Clock clock;
 
     /** Hash usado quando o e-mail não existe, para o tempo de resposta não revelar quais e-mails existem. */
     private final String hashFicticio;
 
     public AuthService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder, JwtService jwtService,
-                       LoginAttemptService loginAttemptService, Clock clock) {
+                       LoginAttemptService loginAttemptService) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.loginAttemptService = loginAttemptService;
-        this.clock = clock;
         this.hashFicticio = passwordEncoder.encode("senha-ficticia-sportfy-1");
     }
 
@@ -58,11 +52,7 @@ public class AuthService {
         usuario.setEmail(email);
         usuario.setSenhaHash(passwordEncoder.encode(req.senha()));
         usuario.setTelefone(textoOuNulo(req.telefone()));
-        usuario.setDataNascimento(req.dataNascimento());
-        usuario.setCidade(textoOuNulo(req.cidade()));
-        usuario.setPerfil(Perfil.USER);
-        usuario.setAtivo(true);
-        usuario.setConsentimentoLgpdEm(LocalDateTime.now(clock));
+        usuario.setNivelHabilidade(req.nivelHabilidade());
 
         usuario = usuarioRepository.save(usuario);
         log.info("Novo usuário cadastrado: id={}", usuario.getId());
@@ -81,7 +71,7 @@ public class AuthService {
         String hash = usuario != null ? usuario.getSenhaHash() : hashFicticio;
         boolean senhaConfere = passwordEncoder.matches(req.senha(), hash);
 
-        if (usuario == null || !senhaConfere || !usuario.isAtivo()) {
+        if (usuario == null || !senhaConfere) {
             loginAttemptService.registrarFalha(email);
             log.warn("Falha de login para o e-mail informado (tentativa registrada)");
             throw new CredenciaisInvalidasException();

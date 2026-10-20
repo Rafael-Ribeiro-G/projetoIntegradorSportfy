@@ -2,7 +2,7 @@ package br.senai.sportfy.exception;
 
 import org.springframework.http.HttpStatus;
 
-/** 422 - os dados são válidos, mas violam uma regra de negócio (ex.: evento lotado). */
+/** 422 - os dados são válidos, mas violam uma regra de negócio (ex.: partida lotada). */
 public class RegraNegocioException extends ApiException {
 
     public RegraNegocioException(String mensagem) {

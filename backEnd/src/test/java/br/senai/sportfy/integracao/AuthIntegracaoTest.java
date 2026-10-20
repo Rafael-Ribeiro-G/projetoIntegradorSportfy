@@ -16,7 +16,7 @@ import org.springframework.http.MediaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-/** Cadastro, login, proteção de rotas, permissões e LGPD. */
+/** Cadastro, login, proteção de rotas, perfil e LGPD. */
 class AuthIntegracaoTest extends IntegracaoBase {
 
     @Test
@@ -27,8 +27,8 @@ class AuthIntegracaoTest extends IntegracaoBase {
         mvc.perform(get("/api/usuarios/me").header("Authorization", bearer(tokenDe(registro))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value(email))
-                .andExpect(jsonPath("$.perfil").value("USER"))
-                .andExpect(jsonPath("$.consentimentoLgpdEm", notNullValue()))
+                .andExpect(jsonPath("$.nivelHabilidade").value(3))
+                .andExpect(jsonPath("$.criadoEm", notNullValue()))
                 // a senha (nem o hash) nunca sai na resposta
                 .andExpect(jsonPath("$.senha").doesNotExist())
                 .andExpect(jsonPath("$.senhaHash").doesNotExist());
@@ -60,14 +60,27 @@ class AuthIntegracaoTest extends IntegracaoBase {
         body.put("nome", "");
         body.put("email", "nao-e-email");
         body.put("senha", "123");
-        body.put("aceiteTermos", false);
+        body.put("nivelHabilidade", 9);
 
         mvc.perform(post("/api/auth/registro").contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(body)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.campos[*].campo", hasItem("email")))
                 .andExpect(jsonPath("$.campos[*].campo", hasItem("senha")))
-                .andExpect(jsonPath("$.campos[*].campo", hasItem("aceiteTermos")));
+                .andExpect(jsonPath("$.campos[*].campo", hasItem("nivelHabilidade")));
+    }
+
+    @Test
+    void registro_semAceiteDeTermos_funciona() throws Exception {
+        // o cadastro não pede mais aceite de termos: só nome, e-mail e senha são obrigatórios
+        ObjectNode body = json.createObjectNode();
+        body.put("nome", "Sem Termos");
+        body.put("email", "sem-termos-" + unico() + "@teste.com");
+        body.put("senha", SENHA_PADRAO);
+        mvc.perform(post("/api/auth/registro").contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(body)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.usuario.nivelHabilidade").doesNotExist());
     }
 
     @Test
@@ -120,22 +133,10 @@ class AuthIntegracaoTest extends IntegracaoBase {
     }
 
     @Test
-    void usuarioComum_naoAcessaRotasDeAdmin() throws Exception {
+    void rotasDeAdminNaoExistemMais() throws Exception {
         String token = tokenDe(registrar("Edu"));
         mvc.perform(get("/api/admin/usuarios").header("Authorization", bearer(token)))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.status").value(403));
-        mvc.perform(post("/api/esportes").header("Authorization", bearer(token))
-                        .contentType(MediaType.APPLICATION_JSON).content("{\"nome\":\"Xadrez\"}"))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void admin_criadoNaSubida_acessaRotasDeAdmin() throws Exception {
-        String token = login(ADMIN_EMAIL, ADMIN_SENHA);
-        mvc.perform(get("/api/admin/usuarios").header("Authorization", bearer(token)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.conteudo", notNullValue()));
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -149,7 +150,7 @@ class AuthIntegracaoTest extends IntegracaoBase {
     void perfilPublico_naoExpoeEmailNemTelefone() throws Exception {
         JsonNode outro = registrar("Fabi");
         String token = tokenDe(registrar("Gabi"));
-        long idOutro = outro.get("usuario").get("id").asLong();
+        String idOutro = outro.get("usuario").get("id").asText();
 
         mvc.perform(get("/api/usuarios/" + idOutro).header("Authorization", bearer(token)))
                 .andExpect(status().isOk())
@@ -159,21 +160,21 @@ class AuthIntegracaoTest extends IntegracaoBase {
     }
 
     @Test
-    void atualizarPerfil_salvaEsportesFavoritos() throws Exception {
+    void atualizarPerfil_salvaNomeTelefoneENivel() throws Exception {
         String token = tokenDe(registrar("Hugo"));
         ObjectNode body = json.createObjectNode();
         body.put("nome", "Hugo Silva");
-        body.put("cidade", "Santo André");
-        body.put("nivel", "INTERMEDIARIO");
-        body.put("latitude", -23.66);
-        body.put("longitude", -46.53);
-        body.putArray("esportesFavoritosIds").add(1).add(4);
+        body.put("telefone", "(11) 98888-7777");
+        body.put("nivelHabilidade", 5);
 
         mvc.perform(put("/api/usuarios/me").header("Authorization", bearer(token))
                         .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(body)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nome").value("Hugo Silva"))
-                .andExpect(jsonPath("$.esportesFavoritos.length()").value(2));
+                .andExpect(jsonPath("$.telefone").value("(11) 98888-7777"))
+                .andExpect(jsonPath("$.nivelHabilidade").value(5));
+        mvc.perform(get("/api/usuarios/me").header("Authorization", bearer(token)))
+                .andExpect(jsonPath("$.nivelHabilidade").value(5));
     }
 
     @Test
@@ -208,7 +209,7 @@ class AuthIntegracaoTest extends IntegracaoBase {
     }
 
     @Test
-    void excluirConta_anonimizaEImpedeNovoLogin() throws Exception {
+    void excluirConta_apagaEImpedeNovoLogin() throws Exception {
         JsonNode registro = registrar("Iara");
         String email = registro.get("usuario").get("email").asText();
         String token = tokenDe(registro);

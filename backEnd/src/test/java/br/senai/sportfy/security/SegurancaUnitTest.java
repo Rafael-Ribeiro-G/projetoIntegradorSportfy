@@ -7,12 +7,12 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
 import br.senai.sportfy.config.SportfyProperties;
 import br.senai.sportfy.domain.Usuario;
-import br.senai.sportfy.domain.enums.Perfil;
 
 /** Testes unitários de JWT e do bloqueio de tentativas de login. */
 class SegurancaUnitTest {
@@ -23,16 +23,16 @@ class SegurancaUnitTest {
         return new SportfyProperties(
                 new SportfyProperties.Jwt(segredo, 60, "sportfy-api"),
                 new SportfyProperties.Cors("http://localhost:3000"),
-                new SportfyProperties.Login(maxTentativas, 15),
-                new SportfyProperties.Admin(null, null));
+                new SportfyProperties.Login(maxTentativas, 15));
     }
+
+    private static final UUID ID = UUID.fromString("7f1c2a52-1b6e-4c1e-9d0a-2b9f3c8e4a10");
 
     private static Usuario usuario() {
         Usuario u = new Usuario();
-        u.setId(42L);
+        u.setId(ID);
         u.setNome("Teste");
         u.setEmail("teste@sportfy.com");
-        u.setPerfil(Perfil.USER);
         return u;
     }
 
@@ -42,7 +42,7 @@ class SegurancaUnitTest {
     void jwt_tokenGeradoEhValidoEDevolveOId() {
         JwtService jwt = new JwtService(props(SEGREDO, 5));
         String token = jwt.gerarToken(usuario());
-        assertThat(jwt.extrairUsuarioId(token)).contains(42L);
+        assertThat(jwt.extrairUsuarioId(token)).contains(ID);
     }
 
     @Test

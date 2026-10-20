@@ -3,8 +3,8 @@
 # Confere se o servidor está pronto para subir a API do Sportfy.
 # Rodar no servidor, na pasta do projeto:   bash scripts/verificar-servidor.sh
 #
-# Verifica: .env preenchido, conexão com o banco, nome do banco,
-# permissão para criar tabelas, se o schema está livre, Docker e porta.
+# Verifica: .env preenchido, conexão com o banco, se as tabelas do Enzo existem,
+# se o usuário da API pode ler/gravar nelas, se há esportes, Docker e porta.
 # Não altera nada. Sai com código 1 se houver algo a corrigir.
 # =============================================================
 set -u
@@ -59,7 +59,7 @@ if [[ "$(stat -c %a "$ARQUIVO_ENV" 2>/dev/null)" != "600" ]]; then
     dica "chmod 600 $ARQUIVO_ENV"
 fi
 
-SCHEMA="${ENV[DB_SCHEMA]:-sportfy}"
+SCHEMA="${ENV[DB_SCHEMA]:-public}"
 PORTA_API="${ENV[SERVER_PORT]:-8080}"
 
 # ------------------------------------------------------------- banco
@@ -69,7 +69,7 @@ if [[ "$DB_URL" =~ ^jdbc:postgresql://([^/:?]+)(:([0-9]+))?/([^?]+) ]]; then
     DB_HOST="${BASH_REMATCH[1]}"
     DB_PORTA="${BASH_REMATCH[3]:-5432}"
     DB_NOME="${BASH_REMATCH[4]}"
-    ok "DB_URL aponta para host=$DB_HOST porta=$DB_PORTA banco=$DB_NOME (schema da API: $SCHEMA)."
+    ok "DB_URL aponta para host=$DB_HOST porta=$DB_PORTA banco=$DB_NOME (schema das tabelas: $SCHEMA)."
 else
     erro "DB_URL fora do formato jdbc:postgresql://host:porta/banco"
     DB_HOST=""
@@ -87,50 +87,59 @@ if [[ -n "${DB_HOST:-}" && -n "${ENV[DB_USER]:-}" ]]; then
         if SAIDA=$(psql "${CONEXAO[@]}" -d "$DB_NOME" -c "select 1" 2>&1); then
             ok "Conectou como ${ENV[DB_USER]} no banco $DB_NOME."
 
-            RESULTADO=$(psql "${CONEXAO[@]}" -d "$DB_NOME" -F '|' -v schema="$SCHEMA" <<'SQL' 2>&1
-select
-  has_database_privilege(current_user, current_database(), 'CREATE'),
-  exists (select 1 from pg_namespace where nspname = :'schema'),
-  (select count(*) from pg_class c join pg_namespace n on n.oid = c.relnamespace
-     where n.nspname = :'schema' and c.relkind in ('r','p')),
-  exists (select 1 from pg_class c join pg_namespace n on n.oid = c.relnamespace
-     where n.nspname = :'schema' and c.relname = 'flyway_schema_history'),
-  coalesce((select has_schema_privilege(current_user, n.oid, 'CREATE')
-     from pg_namespace n where n.nspname = :'schema'), true),
-  current_setting('server_version');
-SQL
-)
-            IFS='|' read -r PODE_CRIAR SCHEMA_EXISTE QTD_TABELAS TEM_FLYWAY PODE_NO_SCHEMA VERSAO <<< "$RESULTADO"
+            VERSAO=$(psql "${CONEXAO[@]}" -d "$DB_NOME" -c "select current_setting('server_version')" 2>/dev/null)
             ok "PostgreSQL $VERSAO."
 
-            if [[ "$SCHEMA_EXISTE" == "t" ]]; then
-                if [[ "$PODE_NO_SCHEMA" != "t" ]]; then
-                    erro "O schema \"$SCHEMA\" existe, mas ${ENV[DB_USER]} não pode criar tabelas nele."
-                    dica "como superusuário: sudo -u postgres psql -d $DB_NOME -c 'ALTER SCHEMA $SCHEMA OWNER TO ${ENV[DB_USER]};'"
-                elif [[ "$TEM_FLYWAY" == "t" ]]; then
-                    VERSOES=$(psql "${CONEXAO[@]}" -d "$DB_NOME" -c \
-                        "select string_agg(version || ' ' || description, ', ' order by installed_rank) from \"$SCHEMA\".flyway_schema_history where success" 2>/dev/null)
-                    ok "Banco já preparado pelo Flyway antes (migrations: ${VERSOES:-?}). A API só aplica o que for novo."
-                elif [[ "$QTD_TABELAS" == "0" ]]; then
-                    ok "Schema \"$SCHEMA\" existe e está vazio: o Flyway cria as tabelas na primeira subida."
+            # tabelas que a API usa (estrutura criada pelo responsável do banco)
+            TABELAS="usuarios esportes locais quadras partidas partida_participantes"
+            FALTANDO=""; SEM_PERMISSAO=""
+            for t in $TABELAS; do
+                # esportes: a API só lê. Nas outras ela lê e grava.
+                PRIVS="SELECT INSERT UPDATE DELETE"; [[ "$t" == "esportes" ]] && PRIVS="SELECT"
+                R=$(psql "${CONEXAO[@]}" -d "$DB_NOME" -F '|' -v schema="$SCHEMA" -v tabela="$t" -v privs="$PRIVS" <<'SQL' 2>/dev/null
+select to_regclass(format('%I.%I', :'schema', :'tabela')) is not null,
+       coalesce((select bool_and(has_table_privilege(format('%I.%I', :'schema', :'tabela'), p))
+                 from unnest(string_to_array(:'privs', ' ')) as p
+                 where to_regclass(format('%I.%I', :'schema', :'tabela')) is not null), false);
+SQL
+)
+                IFS='|' read -r EXISTE PODE <<< "$R"
+                if [[ "$EXISTE" != "t" ]]; then FALTANDO="$FALTANDO $t";
+                elif [[ "$PODE" != "t" ]]; then SEM_PERMISSAO="$SEM_PERMISSAO $t"; fi
+            done
+
+            if [[ -n "$FALTANDO" ]]; then
+                erro "Tabela(s) não encontrada(s) no schema \"$SCHEMA\":$FALTANDO"
+                if [[ "$SCHEMA" != "public" ]]; then
+                    dica "as tabelas do Enzo ficam no schema public: no .env use DB_SCHEMA=public (ou apague a linha)."
                 else
-                    erro "O schema \"$SCHEMA\" já tem $QTD_TABELAS tabela(s) que não foram criadas pelo Flyway."
-                    dica "o Flyway não sobe por cima de tabelas desconhecidas (proteção contra perda de dados)."
-                    dica "opção 1: usar outro schema, ex.: DB_SCHEMA=sportfy_api no .env"
-                    dica "opção 2: se forem só testes, apagar: DROP SCHEMA $SCHEMA CASCADE;  (apaga os dados!)"
+                    dica "a estrutura do banco é criada pelo responsável do banco (referência: sql/estrutura_banco_enzo.sql)."
                 fi
-            elif [[ "$PODE_CRIAR" == "t" ]]; then
-                ok "Schema \"$SCHEMA\" ainda não existe e ${ENV[DB_USER]} tem permissão para criá-lo."
-                ok "Na primeira subida o Flyway cria o schema, as 5 tabelas e os 12 esportes."
             else
-                erro "${ENV[DB_USER]} não tem permissão para criar o schema \"$SCHEMA\" no banco $DB_NOME."
-                dica "como superusuário: sudo -u postgres psql -v db=$DB_NOME -f sql/00_preparar_banco.sql"
+                ok "As 6 tabelas que a API usa existem no schema \"$SCHEMA\"."
+            fi
+            if [[ -n "$SEM_PERMISSAO" ]]; then
+                erro "${ENV[DB_USER]} não pode ler/gravar em:$SEM_PERMISSAO"
+                dica "o responsável do banco roda: sudo -u postgres psql -d $DB_NOME -f sql/00_preparar_banco.sql"
+            elif [[ -z "$FALTANDO" ]]; then
+                ok "${ENV[DB_USER]} pode ler e gravar dados nessas tabelas."
             fi
 
-            OUTRAS=$(psql "${CONEXAO[@]}" -d "$DB_NOME" -c \
-                "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind in ('r','p')" 2>/dev/null)
-            if [[ "${OUTRAS:-0}" != "0" ]]; then
-                ok "Há $OUTRAS tabela(s) no schema public; não interferem (a API usa só o schema \"$SCHEMA\")."
+            if [[ -z "$FALTANDO" && -z "$SEM_PERMISSAO" ]]; then
+                QTD_ESPORTES=$(psql "${CONEXAO[@]}" -d "$DB_NOME" -c "select count(*) from \"$SCHEMA\".esportes" 2>/dev/null)
+                if [[ "${QTD_ESPORTES:-0}" == "0" ]]; then
+                    aviso "A tabela esportes está vazia: não dá para cadastrar quadras nem partidas."
+                    dica "o responsável do banco roda: sudo -u postgres psql -d $DB_NOME -f sql/01_esportes_iniciais.sql"
+                else
+                    ok "$QTD_ESPORTES esporte(s) cadastrado(s)."
+                fi
+            fi
+
+            ANTIGO=$(psql "${CONEXAO[@]}" -d "$DB_NOME" -c \
+                "select count(*) from pg_namespace where nspname = 'sportfy'" 2>/dev/null)
+            if [[ "$SCHEMA" != "sportfy" && "${ANTIGO:-0}" != "0" ]]; then
+                aviso "Existe o schema \"sportfy\", da versão anterior da API (tabelas próprias). Não é mais usado."
+                dica "para apagar (só tem dados de teste): psql ... -c 'DROP SCHEMA sportfy CASCADE;'  (ver README)"
             fi
         else
             erro "Não conectou no banco $DB_NOME."
@@ -139,7 +148,7 @@ SQL
                 BANCOS=$(psql "${CONEXAO[@]}" -d postgres -c \
                     "select string_agg(datname, ', ' order by datname) from pg_database where not datistemplate and has_database_privilege(datname, 'CONNECT')" 2>/dev/null)
                 [[ -n "$BANCOS" ]] && dica "bancos que este usuário consegue acessar: $BANCOS"
-                dica "corrija o nome no DB_URL, ou crie o banco: sudo -u postgres psql -v db=$DB_NOME -f sql/00_preparar_banco.sql"
+                dica "corrija o nome no DB_URL (o banco do projeto se chama sportfy)."
             elif [[ "$SAIDA" == *"password authentication failed"* || "$SAIDA" == *"autenticação"* ]]; then
                 dica "usuário ou senha errados no .env (DB_USER / DB_PASSWORD)."
             elif [[ "$SAIDA" == *"Connection refused"* || "$SAIDA" == *"timeout"* || "$SAIDA" == *"could not connect"* ]]; then

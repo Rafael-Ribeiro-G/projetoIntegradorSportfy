@@ -1,9 +1,15 @@
+# Testes: banco H2 em memória com a MESMA estrutura do banco do Enzo (schema-enzo-h2.sql).
 spring:
   datasource:
     url: jdbc:h2:mem:sportfy;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1
     username: sa
     password:
     driver-class-name: org.h2.Driver
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema-enzo-h2.sql
+      data-locations: classpath:esportes-teste.sql
   jpa:
     hibernate:
       ddl-auto: none
@@ -17,9 +23,6 @@ sportfy:
   login:
     max-tentativas: 3
     bloqueio-minutos: 15
-  admin:
-    email: admin@sportfy.test
-    senha: Admin12345
 
 logging:
   level:

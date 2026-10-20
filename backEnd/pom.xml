@@ -13,7 +13,7 @@
 
     <groupId>br.senai</groupId>
     <artifactId>sportfy-backend</artifactId>
-    <version>1.0.0</version>
+    <version>2.0.0</version>
     <name>sportfy-backend</name>
     <description>API REST do Sportfy - Pratique, Conecte-se e Divirta-se</description>
 
@@ -40,7 +40,7 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
-        <!-- Banco de dados -->
+        <!-- Banco de dados (as tabelas são criadas pelo responsável do banco; a API não cria nem altera tabelas) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -49,14 +49,6 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
 
         <!-- Segurança -->

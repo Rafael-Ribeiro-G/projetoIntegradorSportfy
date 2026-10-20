@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
 import javax.crypto.SecretKey;
 
@@ -51,7 +52,6 @@ public class JwtService {
                 .issuer(emissor)
                 .subject(String.valueOf(usuario.getId()))
                 .claim("nome", usuario.getNome())
-                .claim("perfil", usuario.getPerfil().name())
                 .claim(CLAIM_VERSAO_SENHA, versaoSenha(usuario))
                 .issuedAt(Date.from(agora))
                 .expiration(Date.from(agora.plusSeconds(expiracaoSegundos)))
@@ -60,7 +60,7 @@ public class JwtService {
     }
 
     /** Dados lidos de um token válido (assinatura, emissor e validade conferidos). */
-    public record TokenInfo(Long usuarioId, String versaoSenha) {
+    public record TokenInfo(UUID usuarioId, String versaoSenha) {
     }
 
     public Optional<TokenInfo> validar(String token) {
@@ -71,14 +71,14 @@ public class JwtService {
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
-            return Optional.of(new TokenInfo(Long.valueOf(claims.getSubject()),
+            return Optional.of(new TokenInfo(UUID.fromString(claims.getSubject()),
                     claims.get(CLAIM_VERSAO_SENHA, String.class)));
         } catch (JwtException | IllegalArgumentException e) {
             return Optional.empty();
         }
     }
 
-    public Optional<Long> extrairUsuarioId(String token) {
+    public Optional<UUID> extrairUsuarioId(String token) {
         return validar(token).map(TokenInfo::usuarioId);
     }
 

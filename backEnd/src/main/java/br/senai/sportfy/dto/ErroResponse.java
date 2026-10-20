@@ -12,8 +12,8 @@ import java.util.List;
  *   "status": 400,
  *   "erro": "Bad Request",
  *   "mensagem": "Dados inválidos.",
- *   "caminho": "/api/eventos",
- *   "campos": [ { "campo": "titulo", "mensagem": "é obrigatório" } ]
+ *   "caminho": "/api/partidas",
+ *   "campos": [ { "campo": "quadraId", "mensagem": "é obrigatório" } ]
  * }
  * </pre>
  */

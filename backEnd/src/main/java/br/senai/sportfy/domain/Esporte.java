@@ -7,40 +7,35 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+/** Tabela "esportes" (cadastrada pelo responsável do banco; a API só lê). */
 @Entity
 @Table(name = "esportes")
 public class Esporte {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
-    @Column(nullable = false, length = 60, unique = true)
+    @Column(nullable = false, length = 100)
     private String nome;
 
-    @Column(length = 255)
-    private String descricao;
-
-    @Column(name = "jogadores_sugeridos")
-    private Integer jogadoresSugeridos;
-
-    @Column(nullable = false)
-    private boolean ativo = true;
+    @Column(name = "quantidade_jogadores_padrao")
+    private Integer quantidadeJogadoresPadrao;
 
     public Esporte() {
     }
 
-    public Esporte(String nome, String descricao, Integer jogadoresSugeridos) {
+    public Esporte(Integer id, String nome, Integer quantidadeJogadoresPadrao) {
+        this.id = id;
         this.nome = nome;
-        this.descricao = descricao;
-        this.jogadoresSugeridos = jogadoresSugeridos;
+        this.quantidadeJogadoresPadrao = quantidadeJogadoresPadrao;
     }
 
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -52,27 +47,11 @@ public class Esporte {
         this.nome = nome;
     }
 
-    public String getDescricao() {
-        return descricao;
+    public Integer getQuantidadeJogadoresPadrao() {
+        return quantidadeJogadoresPadrao;
     }
 
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
-    }
-
-    public Integer getJogadoresSugeridos() {
-        return jogadoresSugeridos;
-    }
-
-    public void setJogadoresSugeridos(Integer jogadoresSugeridos) {
-        this.jogadoresSugeridos = jogadoresSugeridos;
-    }
-
-    public boolean isAtivo() {
-        return ativo;
-    }
-
-    public void setAtivo(boolean ativo) {
-        this.ativo = ativo;
+    public void setQuantidadeJogadoresPadrao(Integer quantidadeJogadoresPadrao) {
+        this.quantidadeJogadoresPadrao = quantidadeJogadoresPadrao;
     }
 }
