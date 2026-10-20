@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.senai.sportfy.domain.enums.TipoLocal;
 import br.senai.sportfy.dto.local.LocalRequest;
 import br.senai.sportfy.dto.local.LocalResponse;
 import br.senai.sportfy.security.UsuarioAutenticado;
@@ -30,7 +31,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/locais")
-@Tag(name = "Locais", description = "Lugares onde ficam as quadras (clubes, parques, escolas)")
+@Tag(name = "Locais", description = "Lugares das atividades: clubes com quadras, parques, academias, pistas, ruas")
 public class LocalController {
 
     private final LocalService localService;
@@ -40,12 +41,15 @@ public class LocalController {
     }
 
     @GetMapping
-    @Operation(summary = "Lista locais. 'texto' busca no nome e no endereço; com latitude/longitude ordena pelos mais próximos")
-    public List<LocalResponse> buscar(@RequestParam(required = false) String texto,
+    @Operation(summary = "Lista locais. 'texto' busca no nome e no endereço; 'tipo' filtra (PARQUE, ACADEMIA...); "
+            + "com latitude/longitude ordena pelos mais próximos. Locais privados só aparecem para o dono")
+    public List<LocalResponse> buscar(@Parameter(hidden = true) @AuthenticationPrincipal UsuarioAutenticado usuario,
+                                      @RequestParam(required = false) String texto,
+                                      @RequestParam(required = false) TipoLocal tipo,
                                       @RequestParam(required = false) Double latitude,
                                       @RequestParam(required = false) Double longitude,
                                       @RequestParam(required = false) Double raioKm) {
-        return localService.buscar(texto, latitude, longitude, raioKm);
+        return localService.buscar(texto, tipo, latitude, longitude, raioKm, usuario == null ? null : usuario.id());
     }
 
     @GetMapping("/{id}")

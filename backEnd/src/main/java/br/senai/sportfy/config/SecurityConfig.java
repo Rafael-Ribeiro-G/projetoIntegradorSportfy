@@ -72,8 +72,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/locais", "/api/locais/{id}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/quadras", "/api/quadras/{id}").permitAll()
                         // sugestões precisa vir ANTES de /api/partidas/{id}, senão casaria com o {id}
-                        .requestMatchers(HttpMethod.GET, "/api/partidas/sugestoes").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/partidas", "/api/partidas/{id}").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/partidas/sugestoes", "/api/eventos/sugestoes").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/partidas", "/api/partidas/{id}",
+                                "/api/eventos", "/api/eventos/{id}").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(respostaErro)

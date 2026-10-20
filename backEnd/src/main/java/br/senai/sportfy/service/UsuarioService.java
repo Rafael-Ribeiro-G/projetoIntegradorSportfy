@@ -22,6 +22,7 @@ import br.senai.sportfy.exception.ConflitoException;
 import br.senai.sportfy.exception.CredenciaisInvalidasException;
 import br.senai.sportfy.exception.RecursoNaoEncontradoException;
 import br.senai.sportfy.exception.RegraNegocioException;
+import br.senai.sportfy.repository.EsporteRepository;
 import br.senai.sportfy.repository.UsuarioRepository;
 import br.senai.sportfy.security.JwtService;
 
@@ -34,16 +35,19 @@ public class UsuarioService {
             + "organizar/participar de partidas. E-mail e telefone não são exibidos a outros usuários.";
 
     private final UsuarioRepository usuarioRepository;
+    private final EsporteRepository esporteRepository;
     private final PartidaService partidaService;
     private final LocalService localService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final Clock clock;
 
-    public UsuarioService(UsuarioRepository usuarioRepository, PartidaService partidaService,
+    public UsuarioService(UsuarioRepository usuarioRepository, EsporteRepository esporteRepository,
+                          PartidaService partidaService,
                           LocalService localService, PasswordEncoder passwordEncoder, JwtService jwtService,
                           Clock clock) {
         this.usuarioRepository = usuarioRepository;
+        this.esporteRepository = esporteRepository;
         this.partidaService = partidaService;
         this.localService = localService;
         this.passwordEncoder = passwordEncoder;
@@ -62,6 +66,13 @@ public class UsuarioService {
         usuario.setNome(req.nome().trim());
         usuario.setTelefone(AuthService.textoOuNulo(req.telefone()));
         usuario.setNivelHabilidade(req.nivelHabilidade());
+        usuario.setFotoUrl(AuthService.textoOuNulo(req.fotoUrl()));
+        usuario.setBio(AuthService.textoOuNulo(req.bio()));
+        if (req.esportesFavoritosIds() != null) {
+            usuario.getEsportesFavoritos().clear();
+            usuario.getEsportesFavoritos().addAll(
+                    AuthService.buscarEsportes(esporteRepository, req.esportesFavoritosIds()));
+        }
         return UsuarioResponse.de(usuario);
     }
 

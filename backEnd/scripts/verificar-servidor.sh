@@ -91,7 +91,7 @@ if [[ -n "${DB_HOST:-}" && -n "${ENV[DB_USER]:-}" ]]; then
             ok "PostgreSQL $VERSAO."
 
             # tabelas que a API usa (estrutura criada pelo responsável do banco)
-            TABELAS="usuarios esportes locais quadras partidas partida_participantes"
+            TABELAS="usuarios esportes locais quadras partidas partida_participantes usuario_esportes"
             FALTANDO=""; SEM_PERMISSAO=""
             for t in $TABELAS; do
                 # esportes: a API só lê. Nas outras ela lê e grava.
@@ -112,17 +112,38 @@ SQL
                 erro "Tabela(s) não encontrada(s) no schema \"$SCHEMA\":$FALTANDO"
                 if [[ "$SCHEMA" != "public" ]]; then
                     dica "as tabelas do Enzo ficam no schema public: no .env use DB_SCHEMA=public (ou apague a linha)."
+                elif [[ "$FALTANDO" == " usuario_esportes" ]]; then
+                    dica "falta aplicar a evolução do banco: sudo -u postgres psql -d $DB_NOME < sql/02_evolucao_espacos_esportivos.sql"
                 else
                     dica "a estrutura do banco é criada pelo responsável do banco (referência: sql/estrutura_banco_enzo.sql)."
                 fi
             else
-                ok "As 6 tabelas que a API usa existem no schema \"$SCHEMA\"."
+                ok "As 7 tabelas que a API usa existem no schema \"$SCHEMA\"."
             fi
             if [[ -n "$SEM_PERMISSAO" ]]; then
                 erro "${ENV[DB_USER]} não pode ler/gravar em:$SEM_PERMISSAO"
                 dica "o responsável do banco roda: sudo -u postgres psql -d $DB_NOME < sql/00_preparar_banco.sql"
             elif [[ -z "$FALTANDO" ]]; then
                 ok "${ENV[DB_USER]} pode ler e gravar dados nessas tabelas."
+            fi
+
+            # colunas do sql/02_evolucao_espacos_esportivos.sql (atividades sem quadra, foto, bio...)
+            if [[ -z "$FALTANDO" ]]; then
+                COLUNAS_FALTANDO=$(psql "${CONEXAO[@]}" -d "$DB_NOME" -v schema="$SCHEMA" <<'SQL' 2>/dev/null
+select coalesce(string_agg(t.tabela || '.' || t.coluna, ' '), '')
+from (values ('locais','tipo'), ('locais','publico'), ('partidas','local_id'), ('partidas','esporte_id'),
+             ('partidas','titulo'), ('partidas','descricao'), ('partidas','imagem_url'),
+             ('usuarios','foto_url'), ('usuarios','bio')) as t(tabela, coluna)
+where not exists (select 1 from information_schema.columns c
+                  where c.table_schema = :'schema' and c.table_name = t.tabela and c.column_name = t.coluna);
+SQL
+)
+                if [[ -n "$COLUNAS_FALTANDO" ]]; then
+                    erro "Faltam colunas da evolução do banco: $COLUNAS_FALTANDO"
+                    dica "o responsável do banco roda: sudo -u postgres psql -d $DB_NOME < sql/02_evolucao_espacos_esportivos.sql"
+                else
+                    ok "Banco já tem as colunas novas (atividades sem quadra, foto, bio, favoritos)."
+                fi
             fi
 
             if [[ -z "$FALTANDO" && -z "$SEM_PERMISSAO" ]]; then

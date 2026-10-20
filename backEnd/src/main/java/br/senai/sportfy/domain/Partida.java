@@ -17,8 +17,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 /**
- * Tabela "partidas": um jogo marcado numa quadra, num horário.
- * O esporte e o local vêm da quadra.
+ * Tabela "partidas": uma atividade esportiva marcada num local, num horário
+ * (pelada na quadra, corrida no parque, treino na academia...).
+ * A quadra é opcional; quando existe, o local e o esporte são os dela.
  * max_jogadores vazio = sem limite de vagas.
  */
 @Entity
@@ -34,8 +35,26 @@ public class Partida {
     private Usuario criador;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "quadra_id", nullable = false)
+    @JoinColumn(name = "local_id", nullable = false)
+    private Local local;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "esporte_id", nullable = false)
+    private Esporte esporte;
+
+    /** Opcional: só para atividades numa quadra específica. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "quadra_id")
     private Quadra quadra;
+
+    @Column(length = 100)
+    private String titulo;
+
+    @Column(columnDefinition = "text")
+    private String descricao;
+
+    @Column(name = "imagem_url", columnDefinition = "text")
+    private String imagemUrl;
 
     @Column(name = "data_hora_inicio", nullable = false)
     private LocalDateTime dataHoraInicio;
@@ -105,6 +124,46 @@ public class Partida {
 
     public void setCriador(Usuario criador) {
         this.criador = criador;
+    }
+
+    public Local getLocal() {
+        return local;
+    }
+
+    public void setLocal(Local local) {
+        this.local = local;
+    }
+
+    public Esporte getEsporte() {
+        return esporte;
+    }
+
+    public void setEsporte(Esporte esporte) {
+        this.esporte = esporte;
+    }
+
+    public String getTitulo() {
+        return titulo;
+    }
+
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+
+    public String getImagemUrl() {
+        return imagemUrl;
+    }
+
+    public void setImagemUrl(String imagemUrl) {
+        this.imagemUrl = imagemUrl;
     }
 
     public Quadra getQuadra() {

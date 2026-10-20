@@ -41,9 +41,10 @@ public class QuadraController {
 
     @GetMapping
     @Operation(summary = "Lista quadras, com filtro opcional por local e por esporte")
-    public List<QuadraResponse> listar(@RequestParam(required = false) UUID localId,
+    public List<QuadraResponse> listar(@Parameter(hidden = true) @AuthenticationPrincipal UsuarioAutenticado usuario,
+                                       @RequestParam(required = false) UUID localId,
                                        @RequestParam(required = false) Integer esporteId) {
-        return quadraService.listar(localId, esporteId);
+        return quadraService.listar(localId, esporteId, usuario == null ? null : usuario.id());
     }
 
     @GetMapping("/{id}")

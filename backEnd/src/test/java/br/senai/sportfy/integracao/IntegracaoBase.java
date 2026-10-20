@@ -32,6 +32,7 @@ abstract class IntegracaoBase {
     protected static final int FUTEBOL = 1;
     protected static final int FUTSAL = 2;
     protected static final int VOLEI = 3;
+    protected static final int CORRIDA = 5;
 
     @Autowired
     protected MockMvc mvc;
@@ -114,6 +115,18 @@ abstract class IntegracaoBase {
         if (maxJogadores != null) {
             body.put("maxJogadores", maxJogadores);
         }
+        return body;
+    }
+
+    /** Atividade sem quadra (corrida no parque, treino na academia...). */
+    protected ObjectNode novaAtividade(String localId, int esporteId, int dias, String titulo) {
+        LocalDateTime inicio = LocalDateTime.now().plusDays(dias).withHour(7).withMinute(0).withSecond(0).withNano(0);
+        ObjectNode body = json.createObjectNode();
+        body.put("localId", localId);
+        body.put("esporteId", esporteId);
+        body.put("titulo", titulo);
+        body.put("dataHoraInicio", inicio.toString());
+        body.put("dataHoraFim", inicio.plusMinutes(60).toString());
         return body;
     }
 

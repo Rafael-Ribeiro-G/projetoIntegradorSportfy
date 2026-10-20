@@ -3,11 +3,14 @@ package br.senai.sportfy.dto.partida;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import br.senai.sportfy.domain.enums.TipoLocal;
+
 /** Filtros opcionais da busca de partidas (GET /api/partidas). */
 public record PartidaFiltro(
         Integer esporteId,
         UUID localId,
         UUID quadraId,
+        TipoLocal tipoLocal,
         String texto,
         LocalDateTime dataInicio,
         LocalDateTime dataFim,

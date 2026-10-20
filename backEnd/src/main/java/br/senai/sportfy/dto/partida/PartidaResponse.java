@@ -10,7 +10,7 @@ import br.senai.sportfy.dto.local.LocalResumo;
 import br.senai.sportfy.dto.usuario.UsuarioResumo;
 
 /**
- * Partida como o front/mobile recebe.
+ * Partida como o front/mobile recebe. "quadra" só vem quando a partida é numa quadra.
  * - vagasRestantes: vazio quando a partida não tem limite de jogadores;
  * - situacao: calculada (ABERTA, LOTADA, EM_ANDAMENTO, ENCERRADA, CANCELADA);
  * - distanciaKm: só quando a busca informa latitude/longitude;
@@ -18,6 +18,9 @@ import br.senai.sportfy.dto.usuario.UsuarioResumo;
  */
 public record PartidaResponse(
         UUID id,
+        String titulo,
+        String descricao,
+        String imagemUrl,
         EsporteResponse esporte,
         QuadraInfo quadra,
         LocalResumo local,

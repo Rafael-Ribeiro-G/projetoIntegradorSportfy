@@ -5,7 +5,9 @@ import java.util.UUID;
 
 import org.hibernate.annotations.ColumnTransformer;
 
+import br.senai.sportfy.domain.enums.TipoLocal;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -17,7 +19,10 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
 /**
- * Tabela "locais": o lugar físico (clube, parque, escola) onde ficam as quadras.
+ * Tabela "locais": o lugar físico da atividade (clube com quadras, parque, academia, pista, rua...).
+ * Só os locais do tipo QUADRA precisam ter quadras; uma corrida no parque usa só o local.
+ * Local não público ("privado", ex.: a casa de alguém) não aparece nas buscas para outras pessoas,
+ * mas quem tem o link (o id) consegue ver.
  *
  * A coluna "coordenadas" é do tipo point do PostgreSQL e guarda "(longitude,latitude)",
  * na mesma ordem usada por mapas e pelo PostGIS (x = longitude, y = latitude).
@@ -46,6 +51,13 @@ public class Local {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dono_id")
     private Usuario dono;
+
+    @Convert(converter = TipoLocalConverter.class)
+    @Column(nullable = false, length = 30)
+    private TipoLocal tipo = TipoLocal.OUTRO;
+
+    @Column(nullable = false)
+    private boolean publico = true;
 
     // ------------------------------------------------------------ coordenadas
 
@@ -126,6 +138,22 @@ public class Local {
 
     public void setCoordenadas(String coordenadas) {
         this.coordenadas = coordenadas;
+    }
+
+    public TipoLocal getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(TipoLocal tipo) {
+        this.tipo = tipo == null ? TipoLocal.OUTRO : tipo;
+    }
+
+    public boolean isPublico() {
+        return publico;
+    }
+
+    public void setPublico(boolean publico) {
+        this.publico = publico;
     }
 
     public Usuario getDono() {

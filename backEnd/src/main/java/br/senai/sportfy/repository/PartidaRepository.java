@@ -20,12 +20,12 @@ import jakarta.persistence.LockModeType;
 
 public interface PartidaRepository extends JpaRepository<Partida, UUID>, JpaSpecificationExecutor<Partida> {
 
-    /** Já traz criador, quadra, local e esporte (evita uma consulta por partida nas listagens). */
+    /** Já traz criador, local, esporte e quadra (evita uma consulta por partida nas listagens). */
     @Override
-    @EntityGraph(attributePaths = {"criador", "quadra", "quadra.local", "quadra.esporte"})
+    @EntityGraph(attributePaths = {"criador", "local", "esporte", "quadra"})
     List<Partida> findAll(Specification<Partida> spec, Sort sort);
 
-    @EntityGraph(attributePaths = {"criador", "quadra", "quadra.local", "quadra.esporte"})
+    @EntityGraph(attributePaths = {"criador", "local", "esporte", "quadra"})
     @Query("select p from Partida p where p.id = :id")
     Optional<Partida> buscarCompleta(@Param("id") UUID id);
 
@@ -52,9 +52,11 @@ public interface PartidaRepository extends JpaRepository<Partida, UUID>, JpaSpec
                                   @Param("ignorarId") UUID ignorarId,
                                   @Param("cancelada") StatusPartida cancelada);
 
-    @EntityGraph(attributePaths = {"criador", "quadra", "quadra.local", "quadra.esporte"})
+    @EntityGraph(attributePaths = {"criador", "local", "esporte", "quadra"})
     @Query("select p from Partida p where p.criador.id = :usuarioId order by p.dataHoraInicio desc")
     List<Partida> buscarCriadasPor(@Param("usuarioId") UUID usuarioId);
 
     long countByQuadraId(UUID quadraId);
+
+    long countByLocalId(UUID localId);
 }

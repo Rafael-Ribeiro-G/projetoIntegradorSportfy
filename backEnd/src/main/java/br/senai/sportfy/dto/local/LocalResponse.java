@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import br.senai.sportfy.domain.Local;
+import br.senai.sportfy.domain.enums.TipoLocal;
 import br.senai.sportfy.dto.quadra.QuadraResumo;
 import br.senai.sportfy.dto.usuario.UsuarioResumo;
 
@@ -15,6 +16,8 @@ public record LocalResponse(
         UUID id,
         String nome,
         String endereco,
+        TipoLocal tipo,
+        boolean publico,
         Double latitude,
         Double longitude,
         UsuarioResumo dono,
@@ -22,7 +25,8 @@ public record LocalResponse(
         List<QuadraResumo> quadras) {
 
     public static LocalResponse de(Local l, Double distanciaKm, List<QuadraResumo> quadras) {
-        return new LocalResponse(l.getId(), l.getNome(), l.getEndereco(), l.getLatitude(), l.getLongitude(),
+        return new LocalResponse(l.getId(), l.getNome(), l.getEndereco(), l.getTipo(), l.isPublico(),
+                l.getLatitude(), l.getLongitude(),
                 UsuarioResumo.de(l.getDono()), distanciaKm, quadras);
     }
 }

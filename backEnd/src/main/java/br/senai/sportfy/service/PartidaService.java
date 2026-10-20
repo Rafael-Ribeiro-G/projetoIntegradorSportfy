@@ -19,6 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import br.senai.sportfy.domain.Esporte;
 import br.senai.sportfy.domain.Local;
 import br.senai.sportfy.domain.ParticipanteId;
 import br.senai.sportfy.domain.Partida;
@@ -41,6 +42,8 @@ import br.senai.sportfy.exception.ConflitoException;
 import br.senai.sportfy.exception.RecursoNaoEncontradoException;
 import br.senai.sportfy.exception.RegraNegocioException;
 import br.senai.sportfy.exception.RequisicaoInvalidaException;
+import br.senai.sportfy.repository.EsporteRepository;
+import br.senai.sportfy.repository.LocalRepository;
 import br.senai.sportfy.repository.PartidaParticipanteRepository;
 import br.senai.sportfy.repository.PartidaRepository;
 import br.senai.sportfy.repository.PartidaSpecifications;
@@ -49,11 +52,13 @@ import br.senai.sportfy.repository.UsuarioRepository;
 import br.senai.sportfy.util.GeoUtils;
 
 /**
- * Regras de negócio das partidas.
+ * Regras de negócio das partidas (qualquer atividade: pelada, corrida, treino, caminhada...).
  *
+ * - a partida acontece num local, de um esporte; a quadra é opcional;
  * - quem cria a partida já entra como participante confirmado;
  * - só quem criou edita ou cancela;
  * - a mesma quadra não pode ter duas partidas no mesmo horário;
+ * - partidas em locais privados não aparecem nas buscas de outras pessoas (quem tem o id vê);
  * - não dá para entrar em partida cancelada, já iniciada ou lotada;
  * - quem criou não pode "sair" da própria partida (deve cancelar);
  * - o limite de jogadores não pode ficar abaixo do número de confirmados.
@@ -71,14 +76,19 @@ public class PartidaService {
     private final PartidaRepository partidaRepository;
     private final PartidaParticipanteRepository participanteRepository;
     private final QuadraRepository quadraRepository;
+    private final LocalRepository localRepository;
+    private final EsporteRepository esporteRepository;
     private final UsuarioRepository usuarioRepository;
     private final Clock clock;
 
     public PartidaService(PartidaRepository partidaRepository, PartidaParticipanteRepository participanteRepository,
-                          QuadraRepository quadraRepository, UsuarioRepository usuarioRepository, Clock clock) {
+                          QuadraRepository quadraRepository, LocalRepository localRepository,
+                          EsporteRepository esporteRepository, UsuarioRepository usuarioRepository, Clock clock) {
         this.partidaRepository = partidaRepository;
         this.participanteRepository = participanteRepository;
         this.quadraRepository = quadraRepository;
+        this.localRepository = localRepository;
+        this.esporteRepository = esporteRepository;
         this.usuarioRepository = usuarioRepository;
         this.clock = clock;
     }
@@ -93,12 +103,12 @@ public class PartidaService {
     @Transactional(readOnly = true)
     public PaginaResponse<PartidaResponse> buscar(PartidaFiltro filtro, Pageable pageable, UUID usuarioLogadoId) {
         validarFiltro(filtro);
-        List<Partida> encontradas = partidaRepository.findAll(PartidaSpecifications.comFiltro(filtro, agora()),
-                ORDEM_PADRAO);
+        List<Partida> encontradas = partidaRepository.findAll(
+                PartidaSpecifications.comFiltro(filtro, agora(), usuarioLogadoId), ORDEM_PADRAO);
 
         if (filtro.temLocalizacao() && filtro.raioKm() != null) {
             encontradas = encontradas.stream()
-                    .filter(p -> p.getQuadra().getLocal().temPosicao())
+                    .filter(p -> p.getLocal().temPosicao())
                     .filter(p -> distancia(p, filtro.latitude(), filtro.longitude()) <= filtro.raioKm())
                     .toList();
         }
@@ -157,7 +167,8 @@ public class PartidaService {
 
     /**
      * Sugestões (Home e chatbot): próximas partidas com vaga em que o usuário ainda não está.
-     * Se mandar latitude/longitude, as mais próximas vêm primeiro; esporteId restringe a um esporte.
+     * Sem esporteId, as dos esportes favoritos do usuário vêm primeiro (se houver alguma).
+     * Com latitude/longitude, ordena pela distância.
      */
     @Transactional(readOnly = true)
     public List<PartidaResponse> sugestoes(UUID usuarioId, Integer esporteId, Double latitude, Double longitude,
@@ -166,10 +177,10 @@ public class PartidaService {
         int quantidade = Math.max(1, Math.min(limite, MAX_SUGESTOES));
         Set<UUID> participa = idsPartidasDoUsuario(usuarioId);
 
-        PartidaFiltro filtro = new PartidaFiltro(esporteId, null, null, null, agora(), null, null, null, null,
+        PartidaFiltro filtro = new PartidaFiltro(esporteId, null, null, null, null, agora(), null, null, null, null,
                 false, false);
-        List<Partida> candidatas = partidaRepository.findAll(PartidaSpecifications.comFiltro(filtro, agora()),
-                        ORDEM_PADRAO).stream()
+        List<Partida> candidatas = partidaRepository.findAll(
+                        PartidaSpecifications.comFiltro(filtro, agora(), usuarioId), ORDEM_PADRAO).stream()
                 .filter(p -> !p.isCriadaPor(usuarioId))
                 .filter(p -> !participa.contains(p.getId()))
                 .toList();
@@ -178,6 +189,19 @@ public class PartidaService {
         List<Partida> comVaga = candidatas.stream()
                 .filter(p -> !p.estaLotada(confirmados.getOrDefault(p.getId(), 0L)))
                 .toList();
+
+        if (esporteId == null) {
+            Set<Integer> favoritos = usuarioRepository.findById(usuarioId)
+                    .map(u -> u.getEsportesFavoritos().stream().map(Esporte::getId).collect(Collectors.toSet()))
+                    .orElse(Set.of());
+            List<Partida> preferidas = comVaga.stream()
+                    .filter(p -> favoritos.contains(p.getEsporte().getId()))
+                    .toList();
+            // se não houver nada dos favoritos, sugere qualquer esporte
+            if (!preferidas.isEmpty()) {
+                comVaga = preferidas;
+            }
+        }
 
         if (latitude != null && longitude != null) {
             comVaga = comVaga.stream()
@@ -195,19 +219,22 @@ public class PartidaService {
     @Transactional
     public PartidaResponse criar(PartidaRequest req, UUID criadorId) {
         validarHorario(req.dataHoraInicio(), req.dataHoraFim());
-        Quadra quadra = buscarQuadra(req.quadraId());
-        verificarQuadraLivre(quadra.getId(), req.dataHoraInicio(), req.dataHoraFim(), null);
+        Onde onde = resolverOnde(req, null);
+        if (onde.quadra() != null) {
+            verificarQuadraLivre(onde.quadra().getId(), req.dataHoraInicio(), req.dataHoraFim(), null);
+        }
 
         Usuario criador = usuarioRepository.findById(criadorId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado."));
 
         Partida partida = new Partida();
         partida.setCriador(criador);
-        partida.setQuadra(quadra);
+        aplicarOnde(partida, onde);
+        aplicarTextos(partida, req);
         partida.setDataHoraInicio(req.dataHoraInicio());
         partida.setDataHoraFim(req.dataHoraFim());
         partida.setMaxJogadores(req.maxJogadores() != null ? req.maxJogadores()
-                : quadra.getEsporte().getQuantidadeJogadoresPadrao());
+                : onde.esporte().getQuantidadeJogadoresPadrao());
         partida.setStatus(StatusPartida.ABERTA);
         partida = partidaRepository.save(partida);
 
@@ -230,10 +257,10 @@ public class PartidaService {
         }
         validarHorario(req.dataHoraInicio(), req.dataHoraFim());
 
-        Quadra quadra = partida.getQuadra().getId().equals(req.quadraId())
-                ? partida.getQuadra()
-                : buscarQuadra(req.quadraId());
-        verificarQuadraLivre(quadra.getId(), req.dataHoraInicio(), req.dataHoraFim(), partidaId);
+        Onde onde = resolverOnde(req, partida.getQuadra());
+        if (onde.quadra() != null) {
+            verificarQuadraLivre(onde.quadra().getId(), req.dataHoraInicio(), req.dataHoraFim(), partidaId);
+        }
 
         long confirmados = contarConfirmados(partidaId);
         Integer max = req.maxJogadores() != null ? req.maxJogadores() : partida.getMaxJogadores();
@@ -242,7 +269,8 @@ public class PartidaService {
                     + " jogadores confirmados; o limite não pode ser menor que isso.");
         }
 
-        partida.setQuadra(quadra);
+        aplicarOnde(partida, onde);
+        aplicarTextos(partida, req);
         partida.setDataHoraInicio(req.dataHoraInicio());
         partida.setDataHoraFim(req.dataHoraFim());
         partida.setMaxJogadores(max);
@@ -331,9 +359,51 @@ public class PartidaService {
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Partida não encontrada."));
     }
 
-    private Quadra buscarQuadra(UUID quadraId) {
-        return quadraRepository.buscarCompleta(quadraId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Quadra não encontrada."));
+    /** Onde a partida acontece: local e esporte sempre; quadra só quando informada. */
+    record Onde(Local local, Esporte esporte, Quadra quadra) {
+    }
+
+    /**
+     * Com quadraId: local e esporte vêm da quadra (se localId/esporteId vierem, precisam bater).
+     * Sem quadraId: localId e esporteId são obrigatórios.
+     * quadraAtual: na edição, a quadra que a partida já tem (evita buscá-la de novo).
+     */
+    private Onde resolverOnde(PartidaRequest req, Quadra quadraAtual) {
+        if (req.quadraId() != null) {
+            Quadra quadra = quadraAtual != null && quadraAtual.getId().equals(req.quadraId())
+                    ? quadraAtual
+                    : quadraRepository.buscarCompleta(req.quadraId())
+                            .orElseThrow(() -> new RecursoNaoEncontradoException("Quadra não encontrada."));
+            if (req.localId() != null && !req.localId().equals(quadra.getLocal().getId())) {
+                throw new RequisicaoInvalidaException("A quadra informada não fica no local informado.");
+            }
+            if (req.esporteId() != null && !req.esporteId().equals(quadra.getEsporte().getId())) {
+                throw new RequisicaoInvalidaException("A quadra informada é de outro esporte ("
+                        + quadra.getEsporte().getNome() + ").");
+            }
+            return new Onde(quadra.getLocal(), quadra.getEsporte(), quadra);
+        }
+        if (req.localId() == null || req.esporteId() == null) {
+            throw new RequisicaoInvalidaException(
+                    "Informe a quadra (quadraId) ou o local e o esporte (localId e esporteId).");
+        }
+        Local local = localRepository.findById(req.localId())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Local não encontrado."));
+        Esporte esporte = esporteRepository.findById(req.esporteId())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Esporte não encontrado."));
+        return new Onde(local, esporte, null);
+    }
+
+    private static void aplicarOnde(Partida partida, Onde onde) {
+        partida.setLocal(onde.local());
+        partida.setEsporte(onde.esporte());
+        partida.setQuadra(onde.quadra());
+    }
+
+    private static void aplicarTextos(Partida partida, PartidaRequest req) {
+        partida.setTitulo(AuthService.textoOuNulo(req.titulo()));
+        partida.setDescricao(AuthService.textoOuNulo(req.descricao()));
+        partida.setImagemUrl(AuthService.textoOuNulo(req.imagemUrl()));
     }
 
     private void verificarCriador(Partida partida, UUID usuarioId) {
@@ -434,7 +504,7 @@ public class PartidaService {
 
     private PartidaResponse paraResponse(Partida p, long confirmados, Double lat, Double lon, Boolean participa) {
         Quadra quadra = p.getQuadra();
-        Local local = quadra.getLocal();
+        Local local = p.getLocal();
         Double distancia = null;
         if (lat != null && lon != null && local.temPosicao()) {
             distancia = GeoUtils.arredondar(distancia(p, lat, lon));
@@ -442,8 +512,12 @@ public class PartidaService {
         Long vagas = p.temLimite() ? Math.max(0, p.getMaxJogadores() - confirmados) : null;
         return new PartidaResponse(
                 p.getId(),
-                EsporteResponse.de(quadra.getEsporte()),
-                new PartidaResponse.QuadraInfo(quadra.getId(), quadra.getNome(), quadra.getPrecoHora()),
+                p.getTitulo(),
+                p.getDescricao(),
+                p.getImagemUrl(),
+                EsporteResponse.de(p.getEsporte()),
+                quadra == null ? null
+                        : new PartidaResponse.QuadraInfo(quadra.getId(), quadra.getNome(), quadra.getPrecoHora()),
                 LocalResumo.de(local),
                 UsuarioResumo.de(p.getCriador()),
                 p.getDataHoraInicio(),
@@ -459,11 +533,11 @@ public class PartidaService {
     }
 
     private static double distancia(Partida p, double lat, double lon) {
-        Local local = p.getQuadra().getLocal();
+        Local local = p.getLocal();
         return GeoUtils.distanciaKm(lat, lon, local.getLatitude(), local.getLongitude());
     }
 
     private static double distanciaOuInfinito(Partida p, double lat, double lon) {
-        return p.getQuadra().getLocal().temPosicao() ? distancia(p, lat, lon) : Double.MAX_VALUE;
+        return p.getLocal().temPosicao() ? distancia(p, lat, lon) : Double.MAX_VALUE;
     }
 }

@@ -1,4 +1,4 @@
--- Cópia da estrutura do banco do Enzo (pg_dump de 19/10/2026), adaptada para o H2 dos testes:
+-- Cópia da estrutura do banco do Enzo (pg_dump de 19/10/2026 + sql/02_evolucao_espacos_esportivos.sql), adaptada para o H2 dos testes:
 --   - "point" vira um DOMAIN de texto (o H2 não tem o tipo point);
 --   - gen_random_uuid() -> RANDOM_UUID(); text -> VARCHAR.
 -- Mantém as mesmas tabelas, colunas, CHECKs e regras ON DELETE.
@@ -12,6 +12,9 @@ CREATE TABLE usuarios (
     telefone character varying(20),
     nivel_habilidade integer,
     criado_em timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    -- sql/02_evolucao_espacos_esportivos.sql
+    foto_url character varying(2000),
+    bio character varying(500),
     CONSTRAINT usuarios_nivel_habilidade_check CHECK (nivel_habilidade >= 1 AND nivel_habilidade <= 5)
 );
 
@@ -26,7 +29,11 @@ CREATE TABLE locais (
     nome character varying(255) NOT NULL,
     endereco character varying(2000) NOT NULL,
     coordenadas point,
-    dono_id uuid REFERENCES usuarios(id) ON DELETE SET NULL
+    dono_id uuid REFERENCES usuarios(id) ON DELETE SET NULL,
+    -- sql/02_evolucao_espacos_esportivos.sql
+    tipo character varying(30) DEFAULT 'outro' NOT NULL,
+    publico boolean DEFAULT true NOT NULL,
+    CONSTRAINT locais_tipo_check CHECK (tipo IN ('quadra', 'parque', 'academia', 'pista', 'rua', 'outro'))
 );
 
 CREATE TABLE quadras (
@@ -40,11 +47,17 @@ CREATE TABLE quadras (
 CREATE TABLE partidas (
     id uuid DEFAULT RANDOM_UUID() NOT NULL PRIMARY KEY,
     criador_id uuid NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
-    quadra_id uuid NOT NULL REFERENCES quadras(id) ON DELETE RESTRICT,
+    quadra_id uuid REFERENCES quadras(id) ON DELETE RESTRICT,
     data_hora_inicio timestamp with time zone NOT NULL,
     data_hora_fim timestamp with time zone NOT NULL,
     max_jogadores integer,
     status character varying(50) DEFAULT 'aberta',
+    -- sql/02_evolucao_espacos_esportivos.sql
+    local_id uuid NOT NULL REFERENCES locais(id) ON DELETE RESTRICT,
+    esporte_id integer NOT NULL REFERENCES esportes(id) ON DELETE RESTRICT,
+    titulo character varying(100),
+    descricao character varying(2000),
+    imagem_url character varying(2000),
     CONSTRAINT partidas_check CHECK (data_hora_fim > data_hora_inicio)
 );
 
@@ -53,6 +66,13 @@ CREATE TABLE partida_participantes (
     usuario_id uuid NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
     status_confirmacao character varying(50) DEFAULT 'pendente',
     PRIMARY KEY (partida_id, usuario_id)
+);
+
+-- sql/02_evolucao_espacos_esportivos.sql
+CREATE TABLE usuario_esportes (
+    usuario_id uuid NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    esporte_id integer NOT NULL REFERENCES esportes(id) ON DELETE CASCADE,
+    PRIMARY KEY (usuario_id, esporte_id)
 );
 
 CREATE TABLE avaliacoes_quadras (

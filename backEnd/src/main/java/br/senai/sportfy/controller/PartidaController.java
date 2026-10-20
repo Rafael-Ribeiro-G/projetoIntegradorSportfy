@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.senai.sportfy.domain.enums.TipoLocal;
 import br.senai.sportfy.dto.PaginaResponse;
 import br.senai.sportfy.dto.partida.ParticipanteResponse;
 import br.senai.sportfy.dto.partida.PartidaFiltro;
@@ -37,8 +38,12 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 
 @RestController
-@RequestMapping("/api/partidas")
-@Tag(name = "Partidas", description = "Telas Home, Ver Partidas e Criar Partida")
+/**
+ * Partidas = eventos esportivos (pelada, corrida, treino, caminhada...).
+ * As mesmas rotas respondem em /api/partidas e em /api/eventos (o nome que o mobile usa).
+ */
+@RequestMapping({"/api/partidas", "/api/eventos"})
+@Tag(name = "Partidas / Eventos", description = "Telas Home, Ver Eventos e Criar Evento (também em /api/eventos)")
 public class PartidaController {
 
     private final PartidaService partidaService;
@@ -49,7 +54,7 @@ public class PartidaController {
 
     @GetMapping
     @Operation(summary = "Busca partidas (por padrão só as que ainda não terminaram e não foram canceladas)",
-            description = "'texto' busca no nome do local, no endereço e no nome da quadra. Para proximidade "
+            description = "'texto' busca no título, no nome do local, no endereço e no nome da quadra. Para proximidade "
                     + "envie latitude, longitude e raioKm. Datas no formato 2026-10-25T19:00:00. "
                     + "Ordenado pela data da partida.")
     public PaginaResponse<PartidaResponse> buscar(
@@ -57,6 +62,7 @@ public class PartidaController {
             @RequestParam(required = false) Integer esporteId,
             @RequestParam(required = false) UUID localId,
             @RequestParam(required = false) UUID quadraId,
+            @RequestParam(required = false) TipoLocal tipoLocal,
             @RequestParam(required = false) String texto,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dataInicio,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dataFim,
@@ -68,7 +74,7 @@ public class PartidaController {
             @RequestParam(defaultValue = "0") @Min(0) int pagina,
             @RequestParam(defaultValue = "20") @Min(1) @Max(50) int tamanho) {
 
-        PartidaFiltro filtro = new PartidaFiltro(esporteId, localId, quadraId, texto, dataInicio, dataFim,
+        PartidaFiltro filtro = new PartidaFiltro(esporteId, localId, quadraId, tipoLocal, texto, dataInicio, dataFim,
                 latitude, longitude, raioKm, incluirEncerradas, incluirCanceladas);
         return partidaService.buscar(filtro, PageRequest.of(pagina, tamanho), usuario == null ? null : usuario.id());
     }
@@ -95,7 +101,8 @@ public class PartidaController {
 
     @PostMapping
     @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Cria uma partida numa quadra; quem cria já ocupa uma vaga")
+    @Operation(summary = "Cria uma partida: com quadraId (numa quadra) ou com localId + esporteId (parque, academia...). "
+            + "Quem cria já ocupa uma vaga")
     public ResponseEntity<PartidaResponse> criar(@Parameter(hidden = true) @AuthenticationPrincipal UsuarioAutenticado usuario,
                                                  @Valid @RequestBody PartidaRequest request) {
         PartidaResponse criada = partidaService.criar(request, usuario.id());

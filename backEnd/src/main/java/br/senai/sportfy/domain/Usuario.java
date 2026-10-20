@@ -1,6 +1,8 @@
 package br.senai.sportfy.domain;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -8,12 +10,16 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 /**
  * Tabela "usuarios" do banco do Enzo.
  * nivel_habilidade vai de 1 (iniciante) a 5 (avançado); pode ficar vazio.
+ * Esportes favoritos ficam na tabela usuario_esportes.
  */
 @Entity
 @Table(name = "usuarios")
@@ -40,6 +46,18 @@ public class Usuario {
 
     @Column(name = "criado_em", updatable = false)
     private LocalDateTime criadoEm;
+
+    @Column(name = "foto_url", columnDefinition = "text")
+    private String fotoUrl;
+
+    @Column(length = 500)
+    private String bio;
+
+    @ManyToMany
+    @JoinTable(name = "usuario_esportes",
+            joinColumns = @JoinColumn(name = "usuario_id"),
+            inverseJoinColumns = @JoinColumn(name = "esporte_id"))
+    private Set<Esporte> esportesFavoritos = new HashSet<>();
 
     @PrePersist
     void aoCriar() {
@@ -94,6 +112,26 @@ public class Usuario {
 
     public void setNivelHabilidade(Integer nivelHabilidade) {
         this.nivelHabilidade = nivelHabilidade;
+    }
+
+    public String getFotoUrl() {
+        return fotoUrl;
+    }
+
+    public void setFotoUrl(String fotoUrl) {
+        this.fotoUrl = fotoUrl;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+
+    public Set<Esporte> getEsportesFavoritos() {
+        return esportesFavoritos;
     }
 
     public LocalDateTime getCriadoEm() {

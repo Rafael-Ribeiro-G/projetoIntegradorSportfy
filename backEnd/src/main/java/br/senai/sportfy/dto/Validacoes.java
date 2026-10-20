@@ -17,6 +17,10 @@ public final class Validacoes {
     public static final String TELEFONE = "^\\+?[0-9 ()-]{8,20}$";
     public static final String MSG_TELEFONE = "formato de telefone inválido";
 
+    /** Link de imagem: http(s), sem espaços e sem < > (até 500 caracteres). */
+    public static final String URL_IMAGEM = "^https?://[^\\s<>\"]{1,490}$";
+    public static final String MSG_URL_IMAGEM = "deve ser um link http(s) válido, sem espaços";
+
     private Validacoes() {
     }
 }

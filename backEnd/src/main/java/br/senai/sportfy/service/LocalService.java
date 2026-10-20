@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import br.senai.sportfy.domain.Local;
 import br.senai.sportfy.domain.Quadra;
 import br.senai.sportfy.domain.Usuario;
+import br.senai.sportfy.domain.enums.TipoLocal;
 import br.senai.sportfy.dto.local.LocalRequest;
 import br.senai.sportfy.dto.local.LocalResponse;
 import br.senai.sportfy.dto.quadra.QuadraResumo;
@@ -24,8 +25,8 @@ import br.senai.sportfy.repository.UsuarioRepository;
 import br.senai.sportfy.util.GeoUtils;
 
 /**
- * Locais (clubes, parques, escolas). Qualquer usuário logado pode cadastrar;
- * só quem cadastrou (o "dono") pode editar ou excluir.
+ * Locais (clubes com quadras, parques, academias, pistas...). Qualquer usuário logado pode cadastrar;
+ * só quem cadastrou (o "dono") pode editar ou excluir. Locais privados só aparecem nas buscas do dono.
  */
 @Service
 public class LocalService {
@@ -45,7 +46,8 @@ public class LocalService {
 
     /** Lista locais; com latitude/longitude ordena pelos mais próximos (e filtra pelo raio, se houver). */
     @Transactional(readOnly = true)
-    public List<LocalResponse> buscar(String texto, Double latitude, Double longitude, Double raioKm) {
+    public List<LocalResponse> buscar(String texto, TipoLocal tipo, Double latitude, Double longitude,
+                                      Double raioKm, UUID usuarioLogadoId) {
         PartidaService.validarCoordenadas(latitude, longitude);
         if (raioKm != null && (latitude == null || raioKm <= 0 || raioKm > PartidaService.RAIO_MAXIMO_KM)) {
             throw new RequisicaoInvalidaException(
@@ -53,7 +55,11 @@ public class LocalService {
                             + PartidaService.RAIO_MAXIMO_KM + " km.");
         }
         String termo = texto == null ? "" : texto.trim();
-        List<Local> locais = localRepository.buscar(termo);
+        // UUID aleatório para visitante: não coincide com nenhum dono, então só vêm os públicos
+        UUID quem = usuarioLogadoId != null ? usuarioLogadoId : UUID.randomUUID();
+        List<Local> locais = localRepository.buscar(termo, quem).stream()
+                .filter(l -> tipo == null || l.getTipo() == tipo)
+                .toList();
 
         if (latitude == null) {
             return locais.stream().map(l -> LocalResponse.de(l, null, null)).toList();
@@ -101,16 +107,15 @@ public class LocalService {
         return LocalResponse.de(local, null, quadras);
     }
 
-    /** Exclui o local e as quadras dele, desde que nenhuma quadra tenha partidas. */
+    /** Exclui o local e as quadras dele, desde que não haja partidas no local. */
     @Transactional
     public void excluir(UUID id, UUID usuarioId) {
         Local local = buscarEntidade(id);
         verificarDono(local, usuarioId);
-        List<Quadra> quadras = quadraRepository.buscarDoLocal(id);
-        boolean temPartidas = quadras.stream().anyMatch(q -> partidaRepository.countByQuadraId(q.getId()) > 0);
-        if (temPartidas) {
-            throw new ConflitoException("Este local tem quadras com partidas registradas e não pode ser excluído.");
+        if (partidaRepository.countByLocalId(id) > 0) {
+            throw new ConflitoException("Este local tem partidas registradas e não pode ser excluído.");
         }
+        List<Quadra> quadras = quadraRepository.buscarDoLocal(id);
         quadraRepository.deleteAll(quadras);
         localRepository.delete(local);
     }
@@ -131,6 +136,8 @@ public class LocalService {
         local.setNome(req.nome().trim());
         local.setEndereco(req.endereco().trim());
         local.definirPosicao(req.latitude(), req.longitude());
+        local.setTipo(req.tipo());
+        local.setPublico(req.publico() == null || req.publico());
     }
 
     private static double distancia(Local l, double lat, double lon) {

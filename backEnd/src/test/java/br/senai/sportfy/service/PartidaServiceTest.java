@@ -37,6 +37,8 @@ import br.senai.sportfy.exception.AcessoNegadoException;
 import br.senai.sportfy.exception.ConflitoException;
 import br.senai.sportfy.exception.RegraNegocioException;
 import br.senai.sportfy.exception.RequisicaoInvalidaException;
+import br.senai.sportfy.repository.EsporteRepository;
+import br.senai.sportfy.repository.LocalRepository;
 import br.senai.sportfy.repository.PartidaParticipanteRepository;
 import br.senai.sportfy.repository.PartidaRepository;
 import br.senai.sportfy.repository.QuadraRepository;
@@ -62,6 +64,10 @@ class PartidaServiceTest {
     @Mock
     private QuadraRepository quadraRepository;
     @Mock
+    private LocalRepository localRepository;
+    @Mock
+    private EsporteRepository esporteRepository;
+    @Mock
     private UsuarioRepository usuarioRepository;
 
     private PartidaService service;
@@ -72,8 +78,8 @@ class PartidaServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new PartidaService(partidaRepository, participanteRepository, quadraRepository,
-                usuarioRepository, RELOGIO);
+        service = new PartidaService(partidaRepository, participanteRepository, quadraRepository, localRepository,
+                esporteRepository, usuarioRepository, RELOGIO);
         criador = usuario("Ana");
         jogador = usuario("Bruno");
 
@@ -129,13 +135,13 @@ class PartidaServiceTest {
 
     @Test
     void criar_fimAntesDoInicio_lancaRequisicaoInvalida() {
-        PartidaRequest req = new PartidaRequest(quadra.getId(), AGORA.plusDays(2), AGORA.plusDays(2).minusHours(1), 10);
+        PartidaRequest req = naQuadra(AGORA.plusDays(2), AGORA.plusDays(2).minusHours(1), 10);
         assertThatThrownBy(() -> service.criar(req, criador.getId())).isInstanceOf(RequisicaoInvalidaException.class);
     }
 
     @Test
     void criar_duracaoMuitoCurta_lancaRegraNegocio() {
-        PartidaRequest req = new PartidaRequest(quadra.getId(), AGORA.plusDays(2), AGORA.plusDays(2).plusMinutes(5), 10);
+        PartidaRequest req = naQuadra(AGORA.plusDays(2), AGORA.plusDays(2).plusMinutes(5), 10);
         assertThatThrownBy(() -> service.criar(req, criador.getId()))
                 .isInstanceOf(RegraNegocioException.class)
                 .hasMessageContaining("15 minutos");
@@ -320,6 +326,8 @@ class PartidaServiceTest {
         p.setId(PARTIDA_ID);
         p.setCriador(criador);
         p.setQuadra(quadra);
+        p.setLocal(quadra.getLocal());
+        p.setEsporte(quadra.getEsporte());
         p.setDataHoraInicio(inicio);
         p.setDataHoraFim(inicio.plusMinutes(90));
         p.setMaxJogadores(max);
@@ -329,6 +337,60 @@ class PartidaServiceTest {
 
     private PartidaRequest request(Integer max) {
         LocalDateTime inicio = AGORA.plusDays(3);
-        return new PartidaRequest(quadra.getId(), inicio, inicio.plusMinutes(90), max);
+        return naQuadra(inicio, inicio.plusMinutes(90), max);
+    }
+
+    private PartidaRequest naQuadra(LocalDateTime inicio, LocalDateTime fim, Integer max) {
+        return new PartidaRequest(null, quadra.getId(), null, "Pelada de quarta", null, null, inicio, fim, max);
+    }
+
+    // ------------------------------------------------------- sem quadra (novo)
+
+    @Test
+    void criar_semQuadra_usaLocalEEsporteInformados() {
+        Local parque = quadra.getLocal();
+        Esporte corrida = new Esporte(5, "Corrida", null);
+        when(localRepository.findById(parque.getId())).thenReturn(Optional.of(parque));
+        when(esporteRepository.findById(5)).thenReturn(Optional.of(corrida));
+        when(usuarioRepository.findById(criador.getId())).thenReturn(Optional.of(criador));
+        when(partidaRepository.save(any(Partida.class))).thenAnswer(inv -> {
+            Partida p = inv.getArgument(0);
+            p.setId(PARTIDA_ID);
+            return p;
+        });
+        LocalDateTime inicio = AGORA.plusDays(1);
+        PartidaRequest req = new PartidaRequest(parque.getId(), null, 5, "Corrida 5 km", "Ritmo leve",
+                "https://exemplo.com/capa.jpg", inicio, inicio.plusHours(1), null);
+
+        PartidaResponse resposta = service.criar(req, criador.getId());
+
+        assertThat(resposta.quadra()).isNull();
+        assertThat(resposta.esporte().nome()).isEqualTo("Corrida");
+        assertThat(resposta.titulo()).isEqualTo("Corrida 5 km");
+        assertThat(resposta.imagemUrl()).isEqualTo("https://exemplo.com/capa.jpg");
+        assertThat(resposta.maxJogadores()).isNull();
+        assertThat(resposta.vagasRestantes()).isNull();
+        // sem quadra não há conflito de horário a checar
+        verify(partidaRepository, never()).contarConflitosDeHorario(any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void criar_semQuadraESemLocal_lancaRequisicaoInvalida() {
+        LocalDateTime inicio = AGORA.plusDays(1);
+        PartidaRequest req = new PartidaRequest(null, null, 5, null, null, null, inicio, inicio.plusHours(1), null);
+        assertThatThrownBy(() -> service.criar(req, criador.getId()))
+                .isInstanceOf(RequisicaoInvalidaException.class)
+                .hasMessageContaining("quadraId");
+    }
+
+    @Test
+    void criar_quadraDeOutroEsporte_lancaRequisicaoInvalida() {
+        when(quadraRepository.buscarCompleta(quadra.getId())).thenReturn(Optional.of(quadra));
+        LocalDateTime inicio = AGORA.plusDays(1);
+        PartidaRequest req = new PartidaRequest(null, quadra.getId(), 99, null, null, null, inicio,
+                inicio.plusHours(1), 10);
+        assertThatThrownBy(() -> service.criar(req, criador.getId()))
+                .isInstanceOf(RequisicaoInvalidaException.class)
+                .hasMessageContaining("Futsal");
     }
 }

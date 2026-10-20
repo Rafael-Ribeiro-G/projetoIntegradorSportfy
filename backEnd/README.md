@@ -23,13 +23,13 @@ Contrato das rotas para o front, mobile e chatbot: **[docs/API.md](docs/API.md)*
 ```bash
 docker compose up -d --build
 ```
-Sobe um PostgreSQL local **com a mesma estrutura do servidor** (`sql/estrutura_banco_enzo.sql` + 12 esportes)
+Sobe um PostgreSQL local **com a mesma estrutura do servidor** (`sql/estrutura_banco_enzo.sql` + `sql/02_evolucao_espacos_esportivos.sql` + 12 esportes)
 e a API. Acesse **http://localhost:8080/swagger-ui.html**.
 Se você já tinha rodado a versão antiga, recrie o banco local: `docker compose down -v && docker compose up -d --build`.
 
 ### Opção B — pela IDE (IntelliJ/VS Code) ou terminal
 Requisitos: JDK 21, Maven 3.9+ e um PostgreSQL com a estrutura do Enzo
-(rode `sql/estrutura_banco_enzo.sql` e `sql/01_esportes_iniciais.sql` num banco vazio).
+(rode `sql/estrutura_banco_enzo.sql`, `sql/01_esportes_iniciais.sql` e `sql/02_evolucao_espacos_esportivos.sql` num banco vazio).
 ```bash
 # variáveis mínimas
 export DB_URL=jdbc:postgresql://localhost:5432/sportfy
@@ -72,6 +72,7 @@ cd projetoIntegradorSportfy/backEnd
 # 1) uma vez só, pelo responsável do banco (só dados: SELECT/INSERT/UPDATE/DELETE)
 sudo -u postgres psql -d sportfy < sql/00_preparar_banco.sql
 sudo -u postgres psql -d sportfy < sql/01_esportes_iniciais.sql   # se não houver esportes
+sudo -u postgres psql -d sportfy < sql/02_evolucao_espacos_esportivos.sql   # eventos sem quadra (20/10)
 
 # 2) configuração
 cp .env.example .env && chmod 600 .env
@@ -128,7 +129,7 @@ Os scripts funcionam com `bash scripts/...` mesmo se o Git (vindo do Windows) ti
 ```
 src/main/java/br/senai/sportfy
 ├── config/        Segurança (Spring Security + CORS), propriedades, Swagger
-├── controller/    Rotas REST (auth, usuários, esportes, locais, quadras, partidas)
+├── controller/    Rotas REST (auth, usuários, esportes, locais, quadras, partidas = /api/eventos)
 ├── domain/        Entidades JPA mapeadas nas tabelas do Enzo e enums
 ├── dto/           Objetos de entrada/saída com as validações
 ├── exception/     Exceções de negócio + tratamento global de erros
@@ -139,23 +140,27 @@ src/main/java/br/senai/sportfy
 sql/estrutura_banco_enzo.sql      Cópia de referência da estrutura do banco (pg_dump do servidor)
 sql/00_preparar_banco.sql         Permissões do back_sportfy (responsável do banco, uma vez)
 sql/01_esportes_iniciais.sql      12 esportes básicos (se a tabela estiver vazia)
+sql/02_evolucao_espacos_esportivos.sql  Eventos sem quadra, tipo de local, foto/bio/favoritos (20/10)
 scripts/verificar-servidor.sh     Diagnóstico do servidor antes do deploy
 scripts/deploy.sh                 Verifica, sobe o container e espera o health check
 ```
 
-## 6. Modelo de dados (banco do Enzo, schema `public`)
+## 6. Modelo de dados (banco do Enzo, schema `public`, + `sql/02_evolucao_espacos_esportivos.sql`)
 ```
-usuarios ─┬─< locais (dono_id) ──< quadras >── esportes
-          │                          │
-          ├─< partidas (criador_id) >┘
-          │        │
-          └─< partida_participantes >┘   chave (partida_id, usuario_id)
+usuarios ─┬─< usuario_esportes >── esportes      (esportes favoritos)
+          ├─< locais (dono_id, tipo, publico) ──< quadras
+          ├─< partidas (criador_id): local_id + esporte_id, quadra_id opcional,
+          │                          titulo, descricao, imagem_url
+          └─< partida_participantes                chave (partida_id, usuario_id)
 ```
-Tabelas usadas pela API: `usuarios`, `esportes`, `locais`, `quadras`, `partidas`, `partida_participantes`.
+"Partida" = **evento esportivo** (pelada, corrida, treino, caminhada...). A quadra é opcional;
+o conflito de horário só é checado quando o evento usa uma quadra.
+Tabelas usadas pela API: `usuarios`, `usuario_esportes`, `esportes`, `locais`, `quadras`, `partidas`, `partida_participantes`.
 Ainda sem rotas: `avaliacoes_quadras`, `avaliacoes_usuarios`, `campeonatos`, `campeonato_equipes`.
 
 Convenções que a API segue ao gravar:
 - `locais.coordenadas` (point) = `(longitude,latitude)`, mesma ordem dos mapas e do PostGIS;
+- `locais.tipo` = `quadra` | `parque` | `academia` | `pista` | `rua` | `outro`;
 - `partidas.status` = `aberta` | `cancelada` (a API também entende `finalizada`);
 - `partida_participantes.status_confirmacao` = `confirmado` quando a pessoa entra
   (registros `pendente` não ocupam vaga; ao sair, a linha é apagada).

@@ -51,7 +51,7 @@ public class UsuarioController {
     }
 
     @PutMapping("/me")
-    @Operation(summary = "Atualiza o perfil (nome, telefone e nível de habilidade de 1 a 5)")
+    @Operation(summary = "Atualiza o perfil: nome, telefone, nível (1 a 5), foto (link), bio e esportes favoritos")
     public UsuarioResponse atualizar(@Parameter(hidden = true) @AuthenticationPrincipal UsuarioAutenticado usuario,
                                      @Valid @RequestBody AtualizarPerfilRequest request) {
         return usuarioService.atualizarPerfil(usuario.id(), request);

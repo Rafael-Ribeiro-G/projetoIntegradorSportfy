@@ -36,10 +36,12 @@ public class QuadraService {
         this.partidaRepository = partidaRepository;
     }
 
+    /** Sem localId, as quadras de locais privados só aparecem para o dono do local. */
     @Transactional(readOnly = true)
-    public List<QuadraResponse> listar(UUID localId, Integer esporteId) {
+    public List<QuadraResponse> listar(UUID localId, Integer esporteId, UUID usuarioLogadoId) {
         List<Quadra> quadras = localId != null ? quadraRepository.buscarDoLocal(localId) : quadraRepository.buscarTodas();
         return quadras.stream()
+                .filter(q -> localId != null || q.getLocal().isPublico() || q.getLocal().pertenceA(usuarioLogadoId))
                 .filter(q -> esporteId == null || q.getEsporte().getId().equals(esporteId))
                 .map(QuadraResponse::de)
                 .toList();

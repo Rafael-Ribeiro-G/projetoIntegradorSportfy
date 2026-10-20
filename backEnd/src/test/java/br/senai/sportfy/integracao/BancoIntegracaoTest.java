@@ -30,8 +30,13 @@ class BancoIntegracaoTest extends IntegracaoBase {
         assertThat(coordenadas).isEqualTo("(-46.6576,-23.5874)");
 
         // status em minúsculas, como o padrão da tabela
-        Map<String, Object> partida = jdbc.queryForMap("select status from partidas where id = cast(? as uuid)", partidaId);
+        Map<String, Object> partida = jdbc.queryForMap(
+                "select status, cast(local_id as varchar) as local_id, esporte_id from partidas where id = cast(? as uuid)",
+                partidaId);
         assertThat(partida.get("status")).isEqualTo("aberta");
+        // local e esporte gravados na própria partida (vêm da quadra)
+        assertThat(partida.get("local_id")).isEqualTo(localId);
+        assertThat(((Number) partida.get("esporte_id")).intValue()).isEqualTo(FUTSAL);
         String confirmacao = jdbc.queryForObject(
                 "select status_confirmacao from partida_participantes where partida_id = cast(? as uuid)",
                 String.class, partidaId);
