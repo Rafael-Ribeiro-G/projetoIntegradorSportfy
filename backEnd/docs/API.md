@@ -299,6 +299,23 @@ Sai da partida. Quem criou não pode sair (deve cancelar).
 
 ---
 
+## SportIA (chatbot) — logado
+
+### `POST /api/chatbot/mensagem`
+```json
+{ "pergunta": "Como participar de um evento?" }
+```
+Resposta `200`: `{ "resposta": "..." }`. A API repassa só o texto da pergunta ao serviço Python do SportIA
+(no próprio servidor, `127.0.0.1:8001`); a chave da Groq nunca sai do servidor.
+Erros: `400` pergunta vazia ou com mais de 1000 caracteres, `401` sem login,
+`429` mais de 20 perguntas em 10 minutos (por usuário), `502` resposta vazia,
+`503` SportIA fora do ar, `504` demorou mais de 40 s. Use timeout de leitura de ~45 s no app.
+
+---
+
+## Mudanças de 21/10: SportIA
+- Nova rota `POST /api/chatbot/mensagem` (chatbot do Gui).
+
 ## Mudanças de 20/10 (tarde): imagens
 - Novo upload: `POST /api/uploads/imagens` devolve a `url` para `fotoUrl`/`imagemUrl`.
 - `fotoUrl` agora vem em cada participante (`/participantes`), no `criador` do evento e no `dono` do local.

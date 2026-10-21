@@ -124,6 +124,8 @@ Os scripts funcionam com `bash scripts/...` mesmo se o Git (vindo do Windows) ti
 | `LOGIN_BLOQUEIO_MINUTOS` | não | `15` | Tempo de bloqueio |
 | `SWAGGER_ENABLED` | não | `true` | Desligue em produção final se quiser |
 | `UPLOADS_PASTA` | não | `uploads` (no Docker: `/app/uploads`, volume `sportfy-uploads`) | Pasta onde ficam as imagens enviadas |
+| `SPORTIA_URL` | não | `http://127.0.0.1:8001/chat` | Endereço do serviço Python do SportIA (chatbot), só no servidor |
+| `SPORTIA_TIMEOUT_SEGUNDOS` | não | `40` | Tempo máximo de espera pela resposta do SportIA |
 | `JPA_DDL_AUTO` | não | `validate` | Hibernate só confere as tabelas na subida; nunca use `update`/`create` (a estrutura é do Enzo) |
 
 ## 5. Estrutura
