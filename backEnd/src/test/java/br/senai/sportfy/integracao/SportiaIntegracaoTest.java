@@ -40,6 +40,8 @@ class SportiaIntegracaoTest extends IntegracaoBase {
             if (corpo.contains("quebrar")) {
                 status = 503;
                 resposta = "{\"detail\":\"SportIA indisponível no momento\"}";
+            } else if (corpo.contains("formato do Gui")) {
+                resposta = "{\"response\":\"Resposta no formato do Gui.\"}";
             } else if (corpo.contains("vazio")) {
                 resposta = "{\"resposta\":\"  \"}";
             }
@@ -79,8 +81,17 @@ class SportiaIntegracaoTest extends IntegracaoBase {
 
         assertThat(r.get("resposta").asText()).isEqualTo("Toque em Participar na tela do evento.");
         // só a pergunta (sem token nem dados do usuário) vai para o serviço Python
-        assertThat(json.readTree(ULTIMO_CORPO.get()).toString())
-                .isEqualTo("{\"pergunta\":\"Como participar de um evento?\"}");
+        JsonNode enviado = json.readTree(ULTIMO_CORPO.get());
+        assertThat(enviado.get("pergunta").asText()).isEqualTo("Como participar de um evento?");
+        assertThat(enviado.get("message").asText()).isEqualTo("Como participar de um evento?");
+        assertThat(enviado.size()).isEqualTo(2);
+    }
+
+    @Test
+    void pythonQueUsaMessageEResponse_tambemFunciona() throws Exception {
+        String token = tokenDe(registrar("Gui"));
+        JsonNode r = enviar(post("/api/chatbot/mensagem"), token, pergunta("formato do Gui"), 200);
+        assertThat(r.get("resposta").asText()).isEqualTo("Resposta no formato do Gui.");
     }
 
     @Test

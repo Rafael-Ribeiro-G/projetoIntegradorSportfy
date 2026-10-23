@@ -38,6 +38,9 @@ public class SportiaService {
 
     public static final int LIMITE_PERGUNTAS = 20;
     private static final Duration JANELA_LIMITE = Duration.ofMinutes(10);
+    /** Campos aceitos na resposta do Python, na ordem: o pacote V11.0 usa "resposta". */
+    private static final java.util.List<String> CAMPOS_RESPOSTA =
+            java.util.List.of("resposta", "response", "reply", "answer", "message", "content", "text");
 
     private final ObjectMapper json;
     private final Clock clock;
@@ -58,7 +61,9 @@ public class SportiaService {
     public String perguntar(UUID usuarioId, String pergunta) {
         registrarPergunta(usuarioId);
         try {
-            String corpo = json.writeValueAsString(Map.of("pergunta", pergunta.strip()));
+            // "pergunta" (pacote V11.0) e "message" (versão do Gui no servidor): o Python usa o que conhece
+            String texto = pergunta.strip();
+            String corpo = json.writeValueAsString(Map.of("pergunta", texto, "message", texto));
             HttpRequest requisicao = HttpRequest.newBuilder(url)
                     .header("Content-Type", "application/json; charset=utf-8")
                     .timeout(timeout)
@@ -70,11 +75,15 @@ public class SportiaService {
                 throw new SportiaException(HttpStatus.SERVICE_UNAVAILABLE,
                         "O SportIA está indisponível. Tente novamente em instantes.");
             }
-            JsonNode resposta = json.readTree(retorno.body()).path("resposta");
-            if (!resposta.isTextual() || resposta.asText().isBlank()) {
-                throw new SportiaException(HttpStatus.BAD_GATEWAY, "O SportIA não conseguiu responder. Tente de novo.");
+            JsonNode corpoResposta = json.readTree(retorno.body());
+            for (String campo : CAMPOS_RESPOSTA) {
+                JsonNode resposta = corpoResposta.path(campo);
+                if (resposta.isTextual() && !resposta.asText().isBlank()) {
+                    return resposta.asText().strip();
+                }
             }
-            return resposta.asText().strip();
+            log.warn("SportIA respondeu 200 sem texto de resposta (campos: {})", nomesDosCampos(corpoResposta));
+            throw new SportiaException(HttpStatus.BAD_GATEWAY, "O SportIA não conseguiu responder. Tente de novo.");
         } catch (HttpTimeoutException ex) {
             throw new SportiaException(HttpStatus.GATEWAY_TIMEOUT, "O SportIA demorou demais para responder.");
         } catch (IOException ex) {
@@ -85,6 +94,12 @@ public class SportiaService {
             Thread.currentThread().interrupt();
             throw new SportiaException(HttpStatus.SERVICE_UNAVAILABLE, "A consulta ao SportIA foi interrompida.");
         }
+    }
+
+    private static String nomesDosCampos(JsonNode no) {
+        java.util.List<String> nomes = new java.util.ArrayList<>();
+        no.fieldNames().forEachRemaining(nomes::add);
+        return String.join(", ", nomes);
     }
 
     private void registrarPergunta(UUID usuarioId) {
