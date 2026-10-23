@@ -46,7 +46,14 @@ public class SportiaService {
     private final Clock clock;
     private final URI url;
     private final Duration timeout;
-    private final HttpClient cliente = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
+    /**
+     * HTTP/1.1 fixo: por padrão o Java tenta "Upgrade: h2c" e o uvicorn (Python) descarta o corpo
+     * nesse caso, respondendo 422 como se a pergunta não tivesse vindo.
+     */
+    private final HttpClient cliente = HttpClient.newBuilder()
+            .version(HttpClient.Version.HTTP_1_1)
+            .connectTimeout(Duration.ofSeconds(5))
+            .build();
     private final Map<UUID, Deque<Instant>> perguntasPorUsuario = new ConcurrentHashMap<>();
 
     public SportiaService(ObjectMapper json, Clock clock,
@@ -71,7 +78,9 @@ public class SportiaService {
                     .build();
             HttpResponse<String> retorno = cliente.send(requisicao, HttpResponse.BodyHandlers.ofString());
             if (retorno.statusCode() != 200) {
-                log.warn("SportIA respondeu HTTP {}", retorno.statusCode());
+                String trecho = retorno.body() == null ? "" : retorno.body();
+                log.warn("SportIA respondeu HTTP {}: {}", retorno.statusCode(),
+                        trecho.length() > 300 ? trecho.substring(0, 300) + "..." : trecho);
                 throw new SportiaException(HttpStatus.SERVICE_UNAVAILABLE,
                         "O SportIA está indisponível. Tente novamente em instantes.");
             }
