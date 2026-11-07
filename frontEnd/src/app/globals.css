@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+/*
+  Tema do Sportfy. Cada --color-* vira uma classe do Tailwind:
+  --color-primary → bg-primary, text-primary, border-primary...
+  (Provisório até chegarem os prints/Figma do app mobile.)
+*/
+@theme {
+  --color-primary: #16a34a;
+  --color-primary-dark: #15803d;
+  --color-primary-light: #dcfce7;
+  --color-secondary: #f97316;
+
+  --color-fundo: #f4f6f5;
+  --color-superficie: #ffffff;
+  --color-texto: #111827;
+  --color-texto-suave: #6b7280;
+  --color-borda: #e5e7eb;
+
+  --color-erro: #dc2626;
+  --color-aviso: #d97706;
+  --color-sucesso: #16a34a;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background: var(--color-fundo);
+  color: var(--color-texto);
+}
