@@ -5,11 +5,13 @@ import type { Partida, SituacaoPartida } from "@/types/partida";
 import type { NivelHabilidade } from "@/types/usuario";
 
 export const SITUACOES: Record<SituacaoPartida, { texto: string; classe: string }> = {
-  ABERTA: { texto: "Aberta", classe: "bg-primary-light text-primary-dark" },
-  LOTADA: { texto: "Lotada", classe: "bg-orange-100 text-orange-700" },
-  EM_ANDAMENTO: { texto: "Em andamento", classe: "bg-sky-100 text-sky-700" },
-  ENCERRADA: { texto: "Encerrada", classe: "bg-gray-200 text-gray-700" },
-  CANCELADA: { texto: "Cancelada", classe: "bg-red-100 text-red-700" },
+  // "dark:" = cores do modo escuro. Fundo SÓLIDO (não translúcido) porque a etiqueta
+  // também aparece em cima da capa verde do evento, e o translúcido se misturava com ela.
+  ABERTA: { texto: "Aberta", classe: "bg-primary-light text-primary-forte" },
+  LOTADA: { texto: "Lotada", classe: "bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300" },
+  EM_ANDAMENTO: { texto: "Em andamento", classe: "bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300" },
+  ENCERRADA: { texto: "Encerrada", classe: "bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300" },
+  CANCELADA: { texto: "Cancelada", classe: "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300" },
 };
 
 export const TIPOS_LOCAL: Record<TipoLocal, string> = {

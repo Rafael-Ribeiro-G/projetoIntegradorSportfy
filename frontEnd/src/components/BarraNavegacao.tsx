@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "@/components/Logo";
+import { BotaoTema } from "@/components/Tema";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface ItemMenu {
@@ -53,7 +54,8 @@ export function BarraNavegacao() {
     <header className="sticky top-0 z-30 border-b border-borda bg-superficie/95 backdrop-blur">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-4">
         <Link href="/" aria-label="sportfy. - ir para a Home" onClick={fechar}>
-          <Logo tamanho="pequeno" />
+          {/* No modo escuro o cabeçalho fica azul-marinho: usa o logo verde-limão (a cor original). */}
+          <Logo cor="escura" corEscuro="lima" tamanho="pequeno" prioridade />
         </Link>
 
         {/* Computador */}
@@ -78,6 +80,7 @@ export function BarraNavegacao() {
             + Criar evento
           </Link>
           <span className="mx-2 h-6 w-px bg-borda" aria-hidden />
+          <BotaoTema className="text-texto-suave hover:bg-fundo hover:text-texto" />
           <span className="max-w-40 truncate text-sm text-texto-suave" title={usuario?.nome}>
             {usuario?.nome}
           </span>
@@ -90,19 +93,22 @@ export function BarraNavegacao() {
           </button>
         </nav>
 
-        {/* Celular: botão ☰ */}
-        <button
-          type="button"
-          onClick={() => setMenuAberto((aberto) => !aberto)}
-          aria-expanded={menuAberto}
-          aria-controls="menu-celular"
-          aria-label={menuAberto ? "Fechar menu" : "Abrir menu"}
-          className="rounded-lg p-2 text-texto hover:bg-fundo md:hidden"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" className="h-6 w-6" aria-hidden>
-            {menuAberto ? <path d="M6 6l12 12M18 6 6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
-          </svg>
-        </button>
+        {/* Celular: tema + botão ☰ */}
+        <div className="flex items-center gap-1 md:hidden">
+          <BotaoTema className="text-texto hover:bg-fundo" />
+          <button
+            type="button"
+            onClick={() => setMenuAberto((aberto) => !aberto)}
+            aria-expanded={menuAberto}
+            aria-controls="menu-celular"
+            aria-label={menuAberto ? "Fechar menu" : "Abrir menu"}
+            className="rounded-lg p-2 text-texto hover:bg-fundo"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" className="h-6 w-6" aria-hidden>
+              {menuAberto ? <path d="M6 6l12 12M18 6 6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Celular: menu aberto */}

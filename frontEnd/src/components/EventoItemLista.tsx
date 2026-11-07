@@ -16,7 +16,7 @@ export function EventoItemLista({ partida, organizador = false }: { partida: Par
       {/* "Folhinha" com dia e mês */}
       <div
         aria-hidden
-        className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl bg-primary-light text-primary-dark"
+        className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl bg-primary-light text-primary-forte"
       >
         <span className="text-xl font-bold leading-none">{dia}</span>
         <span className="text-xs font-semibold uppercase">{mes}</span>

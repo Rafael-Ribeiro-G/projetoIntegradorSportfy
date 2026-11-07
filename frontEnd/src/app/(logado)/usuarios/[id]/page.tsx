@@ -102,7 +102,7 @@ export default function PerfilPublicoPage() {
             <h2 className="text-sm font-medium text-texto-suave">Esportes favoritos</h2>
             <ul className="flex flex-wrap justify-center gap-2">
               {pessoa.esportesFavoritos.map((esp) => (
-                <li key={esp.id} className="rounded-full bg-primary-light px-3 py-1 text-sm font-medium text-primary-dark">
+                <li key={esp.id} className="rounded-full bg-primary-light px-3 py-1 text-sm font-medium text-primary-forte">
                   {esp.nome}
                 </li>
               ))}

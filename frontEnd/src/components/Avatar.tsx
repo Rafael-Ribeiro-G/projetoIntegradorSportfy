@@ -44,7 +44,7 @@ export function Avatar({
   return (
     <span
       aria-hidden
-      className={`${classes} flex items-center justify-center bg-primary-light font-bold text-primary-dark`}
+      className={`${classes} flex items-center justify-center bg-primary-light font-bold text-primary-forte`}
     >
       {iniciais(nome)}
     </span>

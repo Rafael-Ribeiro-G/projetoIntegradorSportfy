@@ -11,7 +11,9 @@ interface BotaoProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const estilos: Record<Variante, string> = {
   primario: "bg-primary text-white hover:bg-primary-dark",
   secundario: "border border-primary text-primary hover:bg-primary-light",
-  perigo: "bg-erro text-white hover:opacity-90",
+  // Vermelho fixo: no modo escuro o --color-erro fica mais claro (bom para texto), mas
+  // com texto branco por cima precisa continuar escuro para dar contraste.
+  perigo: "bg-red-600 text-white hover:bg-red-700",
   texto: "text-primary hover:underline",
 };
 

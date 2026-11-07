@@ -9,6 +9,7 @@ import { Botao } from "@/components/Botao";
 import { MeusEventos } from "@/components/perfil/MeusEventos";
 import { PrivacidadeLgpd } from "@/components/perfil/PrivacidadeLgpd";
 import { TrocarSenha } from "@/components/perfil/TrocarSenha";
+import { SeletorTema } from "@/components/Tema";
 import { TituloPagina } from "@/components/TituloPagina";
 import { useAuth } from "@/contexts/AuthContext";
 import { textoNivel } from "@/lib/rotulos";
@@ -66,7 +67,7 @@ export default function PerfilPage() {
               <h2 className="text-sm text-texto-suave">Esportes favoritos</h2>
               <ul className="flex flex-wrap gap-2">
                 {usuario.esportesFavoritos.map((esp) => (
-                  <li key={esp.id} className="rounded-full bg-primary-light px-3 py-1 text-sm font-medium text-primary-dark">
+                  <li key={esp.id} className="rounded-full bg-primary-light px-3 py-1 text-sm font-medium text-primary-forte">
                     {esp.nome}
                   </li>
                 ))}
@@ -90,6 +91,15 @@ export default function PerfilPage() {
         {/* Seções */}
         <div className="flex flex-col gap-6 lg:col-span-2">
           <MeusEventos />
+          <section
+            aria-labelledby="titulo-aparencia"
+            className="rounded-2xl bg-superficie p-5 shadow-sm ring-1 ring-borda sm:p-6"
+          >
+            <h2 id="titulo-aparencia" className="mb-4 text-lg font-semibold">
+              Aparência
+            </h2>
+            <SeletorTema />
+          </section>
           <TrocarSenha />
           <PrivacidadeLgpd />
         </div>

@@ -1,15 +1,27 @@
 @import "tailwindcss";
 
 /*
+  Variante "dark:" do Tailwind ligada ao NOSSO atributo (e não só à configuração do sistema):
+  ex.: "bg-orange-100 dark:bg-orange-500/15" muda quando <html data-tema="escuro">.
+*/
+@custom-variant dark (&:where([data-tema="escuro"], [data-tema="escuro"] *));
+
+/*
   Tema do Sportfy. Cada --color-* vira uma classe do Tailwind:
   --color-primary → bg-primary, text-primary, border-primary...
-  (Provisório até chegarem os prints/Figma do app mobile.)
+  As classes usam essas variáveis, então o modo escuro só precisa trocar os valores (lá embaixo).
 */
 @theme {
   --color-primary: #16a34a;
   --color-primary-dark: #15803d;
   --color-primary-light: #dcfce7;
+  /* Texto em cima de primary-light (chips, avatar, "Aberta"). */
+  --color-primary-forte: #15803d;
   --color-secondary: #f97316;
+
+  /* Cores do logo oficial (medidas na imagem da marca). */
+  --color-lima: #baf44d;
+  --color-marinho: #0b1320;
 
   --color-fundo: #f4f6f5;
   --color-superficie: #ffffff;
@@ -22,6 +34,25 @@
   --color-sucesso: #16a34a;
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ---------- Modo escuro: só os valores mudam ---------- */
+[data-tema="escuro"] {
+  /* Calendário, scrollbar e campos nativos do navegador também ficam escuros. */
+  color-scheme: dark;
+
+  --color-fundo: #0b1320; /* azul-marinho da marca */
+  --color-superficie: #131d2f;
+  --color-texto: #e6e9ef;
+  --color-texto-suave: #9aa4b5;
+  --color-borda: #26324a;
+
+  --color-primary-light: #14301f;
+  --color-primary-forte: #86efac;
+
+  --color-erro: #f87171;
+  --color-aviso: #fbbf24;
+  --color-sucesso: #4ade80;
 }
 
 body {
