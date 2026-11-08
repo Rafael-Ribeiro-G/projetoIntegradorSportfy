@@ -4,6 +4,7 @@
 
 import { Logo } from "@/components/Logo";
 import { BotaoTema } from "@/components/Tema";
+import { FundoEsportivo } from "@/components/FundoEsportivo";
 
 const DESTAQUES = [
   "Encontre partidas, corridas e treinos perto de você",
@@ -36,7 +37,13 @@ export function LayoutAutenticacao({
       </aside>
 
       {/* Formulário */}
-      <main className="relative flex items-start justify-center px-4 py-14 sm:px-6 lg:items-center lg:py-12">
+      <main className="relative isolate flex items-start justify-center overflow-hidden px-4 py-14 sm:px-6 lg:items-center lg:py-12">
+        {/*
+          Fundo "apagado": campo de futebol bem transparente (azul-marinho no claro, verde no escuro).
+          A máscara radial deixa o centro (onde fica o formulário) mais limpo e as bordas mais visíveis.
+          -z-10 + isolate: fica atrás do conteúdo sem escapar para fora desta área.
+        */}
+        <FundoEsportivo className="-z-10 text-marinho opacity-[0.10] [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black_75%)] dark:text-primary dark:opacity-[0.18]" />
         <BotaoTema className="absolute right-3 top-3 text-texto-suave hover:bg-superficie hover:text-texto" />
         <div className={`w-full ${larguraFormulario} rounded-2xl bg-superficie p-6 shadow-sm sm:p-8`}>
           {children}
